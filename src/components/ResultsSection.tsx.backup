@@ -1,0 +1,353 @@
+import React, { useState } from 'react';
+import { FileText, ListTodo, Sparkles, Copy, Check, ChevronDown, ChevronUp, Download, Eye, EyeOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Task } from '../types';
+
+interface ResultsSectionProps {
+  results: {
+    transcription: string;
+    summary: string;
+    tasks: Task[];
+  } | null;
+  onUpdateTask: (taskIndex: number, updates: Partial<Task>) => void;
+  language: string;
+}
+
+const getTranslations = (language: string) => {
+  const translations = {
+    en: {
+      executiveSummary: 'Executive Summary',
+      actionItems: 'Action Items',
+      fullTranscript: 'Full Transcript',
+      showTranscript: 'Show Full Transcript',
+      hideTranscript: 'Hide Transcript',
+      copyToClipboard: 'Copy to Clipboard',
+      downloadSummary: 'Download Summary',
+      copied: 'Copied!',
+      priority: {
+        High: 'High',
+        Medium: 'Medium',
+        Low: 'Low'
+      },
+      noResults: 'No results available. Please try again.',
+      readyToDownload: 'Ready-to-download executive summary with full transcript available below.',
+      transcriptNote: 'Unfiltered transcript from your audio recording'
+    },
+    no: {
+      executiveSummary: 'Sammendrag',
+      actionItems: 'Handlingspunkter',
+      fullTranscript: 'Full Transkripsjon',
+      showTranscript: 'Vis Full Transkripsjon',
+      hideTranscript: 'Skjul Transkripsjon',
+      copyToClipboard: 'Kopier til Utklippstavle',
+      downloadSummary: 'Last ned Sammendrag',
+      copied: 'Kopiert!',
+      priority: {
+        High: 'Høy',
+        Medium: 'Medium',
+        Low: 'Lav'
+      },
+      noResults: 'Ingen resultater tilgjengelig. Vennligst prøv igjen.',
+      readyToDownload: 'Ferdig sammendrag klart for nedlasting med full transkripsjon tilgjengelig nedenfor.',
+      transcriptNote: 'Ufiltrert transkripsjon fra lydopptaket ditt'
+    }
+  };
+  return translations[language as keyof typeof translations] || translations.en;
+};
+
+export default function ResultsSection({ results, onUpdateTask, language }: ResultsSectionProps) {
+  const [copiedStates, setCopiedStates] = useState({
+    summary: false,
+    transcript: false,
+    fullDocument: false
+  });
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [editingTask, setEditingTask] = useState<number | null>(null);
+  const t = getTranslations(language);
+
+  if (!results) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600">{t.noResults}</p>
+      </div>
+    );
+  }
+
+  const handleCopy = async (type: keyof typeof copiedStates, content?: string) => {
+    let textToCopy = '';
+    
+    switch (type) {
+      case 'summary':
+        textToCopy = results.summary;
+        break;
+      case 'transcript':
+        textToCopy = results.transcription;
+        break;
+      case 'fullDocument':
+        textToCopy = `${t.executiveSummary}:\n\n${results.summary}\n\n`;
+        if (results.tasks && results.tasks.length > 0) {
+          textToCopy += `${t.actionItems}:\n${results.tasks
+            .map((task, index) => `${index + 1}. ${task.text}\n   Priority: ${t.priority[task.priority as keyof typeof t.priority]}\n   Due: ${task.dueDate}${task.dueTime ? ` at ${task.dueTime}` : ''}\n`)
+            .join('\n')}\n\n`;
+        }
+        textToCopy += `${t.fullTranscript}:\n\n${results.transcription}`;
+        break;
+      default:
+        textToCopy = content || '';
+    }
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setCopiedStates(prev => ({ ...prev, [type]: true }));
+      setTimeout(() => {
+        setCopiedStates(prev => ({ ...prev, [type]: false }));
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy text:', error);
+    }
+  };
+
+  const downloadAsTextFile = () => {
+    const content = `${t.executiveSummary}\n${'='.repeat(50)}\n\n${results.summary}\n\n`;
+    let fullContent = content;
+    
+    if (results.tasks && results.tasks.length > 0) {
+      fullContent += `${t.actionItems}\n${'='.repeat(50)}\n`;
+      results.tasks.forEach((task, index) => {
+        fullContent += `${index + 1}. ${task.text}\n`;
+        fullContent += `   Priority: ${t.priority[task.priority as keyof typeof t.priority]}\n`;
+        fullContent += `   Due: ${task.dueDate}${task.dueTime ? ` at ${task.dueTime}` : ''}\n\n`;
+      });
+      fullContent += '\n';
+    }
+    
+    fullContent += `${t.fullTranscript}\n${'='.repeat(50)}\n\n${results.transcription}`;
+
+    const blob = new Blob([fullContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `summary_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header with Download Actions */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-blue-100 rounded-full p-2">
+              <Sparkles className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-800">{t.readyToDownload}</h3>
+              <p className="text-sm text-gray-600">Complete analysis with executive summary and action items</p>
+            </div>
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={() => handleCopy('fullDocument')}
+              className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              {copiedStates.fullDocument ? (
+                <Check className="w-4 h-4 text-green-500" />
+              ) : (
+                <Copy className="w-4 h-4 text-gray-500" />
+              )}
+              <span className="text-sm">{copiedStates.fullDocument ? t.copied : t.copyToClipboard}</span>
+            </button>
+            <button
+              onClick={downloadAsTextFile}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span className="text-sm">{t.downloadSummary}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Executive Summary Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-lg shadow-lg border-l-4 border-blue-500 p-6"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <Sparkles className="w-6 h-6 text-blue-500" />
+            <h2 className="text-2xl font-bold text-gray-800">{t.executiveSummary}</h2>
+          </div>
+          <button
+            onClick={() => handleCopy('summary')}
+            className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+          >
+            {copiedStates.summary ? (
+              <Check className="w-4 h-4 text-green-500" />
+            ) : (
+              <Copy className="w-4 h-4 text-gray-500" />
+            )}
+            <span className="text-sm">{copiedStates.summary ? t.copied : t.copyToClipboard}</span>
+          </button>
+        </div>
+        <div className="prose prose-lg max-w-none">
+          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{results.summary}</p>
+        </div>
+      </motion.div>
+
+      {/* Action Items Section */}
+      {Array.isArray(results.tasks) && results.tasks.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-lg shadow-lg border-l-4 border-green-500 p-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <ListTodo className="w-6 h-6 text-green-500" />
+              <h2 className="text-2xl font-bold text-gray-800">{t.actionItems}</h2>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {results.tasks.map((task, index) => (
+              <motion.div
+                key={task.id}
+                layout
+                className="p-4 bg-gray-50 rounded-lg border hover:shadow-md transition-all duration-200"
+              >
+                <div className="space-y-3">
+                  <p className="text-gray-800 font-medium">{task.text}</p>
+                  <div className="flex flex-wrap gap-3 items-center">
+                    {/* Priority Dropdown */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setEditingTask(editingTask === index ? null : index)}
+                        className={`px-3 py-1.5 rounded-full flex items-center space-x-2 text-sm font-medium ${
+                          task.priority === 'High' ? 'bg-red-100 text-red-800 border border-red-200' :
+                          task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                          'bg-green-100 text-green-800 border border-green-200'
+                        }`}
+                      >
+                        <span>{t.priority[task.priority as keyof typeof t.priority]}</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </button>
+
+                      <AnimatePresence>
+                        {editingTask === index && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border z-10 min-w-[120px]"
+                          >
+                            {['High', 'Medium', 'Low'].map((priority) => (
+                              <button
+                                key={priority}
+                                onClick={() => {
+                                  onUpdateTask(index, { priority: priority as Task['priority'] });
+                                  setEditingTask(null);
+                                }}
+                                className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg ${
+                                  priority === 'High' ? 'text-red-800 hover:bg-red-50' :
+                                  priority === 'Medium' ? 'text-yellow-800 hover:bg-yellow-50' :
+                                  'text-green-800 hover:bg-green-50'
+                                }`}
+                              >
+                                {t.priority[priority as keyof typeof t.priority]}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Date and Time Inputs */}
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="date"
+                        value={task.dueDate}
+                        onChange={(e) => onUpdateTask(index, { dueDate: e.target.value })}
+                        className="px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <input
+                        type="time"
+                        value={task.dueTime || ''}
+                        onChange={(e) => onUpdateTask(index, { dueTime: e.target.value })}
+                        className="px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Collapsible Transcript Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-lg shadow-lg border-l-4 border-gray-400"
+      >
+        <button
+          onClick={() => setShowTranscript(!showTranscript)}
+          className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center space-x-2">
+            <FileText className="w-6 h-6 text-gray-500" />
+            <h2 className="text-xl font-semibold text-gray-800">{t.fullTranscript}</h2>
+            <span className="text-sm text-gray-500">({t.transcriptNote})</span>
+          </div>
+          <div className="flex items-center space-x-3">
+            {showTranscript && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCopy('transcript');
+                }}
+                className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+              >
+                {copiedStates.transcript ? (
+                  <Check className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Copy className="w-4 h-4 text-gray-500" />
+                )}
+                <span className="text-sm">{copiedStates.transcript ? t.copied : t.copyToClipboard}</span>
+              </button>
+            )}
+            {showTranscript ? (
+              <ChevronUp className="w-5 h-5 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-gray-500" />
+            )}
+          </div>
+        </button>
+        
+        <AnimatePresence>
+          {showTranscript && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <div className="px-6 pb-6 pt-0 border-t border-gray-200">
+                <div className="max-h-96 overflow-y-auto bg-gray-50 rounded-lg p-4 mt-4">
+                  <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed font-mono">
+                    {results.transcription}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  );
+}
