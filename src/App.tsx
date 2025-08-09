@@ -24,7 +24,7 @@ import { TranscriptionMode, BiographyPreferences, DraftTranscription } from './t
 import { SearchBar } from './components/SearchBar';
 
 function App() {
-  const { user, signIn, signOut } = useAuth();
+  const { user, signIn, signOut, signUp } = useAuth();
   const { transcriptions, saveTranscription } = useTranscriptions(user?.id || null);
   const { error: appError, handleError, clearError, retryOperation, isRetrying } = useErrorHandler();
   const [showHistory, setShowHistory] = useState(false);
@@ -397,9 +397,18 @@ function App() {
     setResetKey(prev => prev + 1);
   };
 
-  const handleAuth = (email: string, password: string) => {
-    signIn(email, password);
-    setShowAuthModal(false);
+  const handleAuth = async (email: string, password: string, isSignUp = false) => {
+    try {
+      if (isSignUp) {
+        await signUp(email, password);
+      } else {
+        await signIn(email, password);
+      }
+      setShowAuthModal(false);
+    } catch (error) {
+      console.error('Authentication error:', error);
+      handleError(error instanceof Error ? error : new Error('Authentication failed'));
+    }
   };
 
   useEffect(() => {

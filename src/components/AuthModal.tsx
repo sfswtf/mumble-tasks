@@ -5,7 +5,7 @@ import { X, Mail, Lock } from 'lucide-react';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAuth: (email: string, password: string) => void;
+  onAuth: (email: string, password: string, isSignUp: boolean) => void;
 }
 
 export default function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
@@ -15,7 +15,7 @@ export default function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAuth(email, password);
+    onAuth(email, password, isSignUp);
   };
 
   return (
@@ -90,8 +90,9 @@ export default function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
             <p className="mt-4 text-center text-sm text-gray-600">
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
               <button
+                type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-blue-500 hover:text-blue-600"
+                className="text-blue-500 hover:text-blue-600 font-medium"
               >
                 {isSignUp ? 'Sign In' : 'Sign Up'}
               </button>
