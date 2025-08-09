@@ -1,64 +1,101 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { TranscriptionRecord } from '../types';
-
-const STORAGE_PREFIX = 'mumbleTasks_transcriptions_';
 
 export function useTranscriptions(userId: string | null) {
   const [transcriptions, setTranscriptions] = useState<TranscriptionRecord[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Load transcriptions when userId changes
   useEffect(() => {
-    const loadTranscriptions = () => {
+    const loadTranscriptions = async () => {
       if (!userId) {
         setTranscriptions([]);
         return;
       }
 
+      setLoading(true);
       try {
-        const saved = localStorage.getItem(`${STORAGE_PREFIX}${userId}`);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) {
-            const sorted = parsed.sort((a, b) => 
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-            setTranscriptions(sorted);
-          } else {
-            setTranscriptions([]);
-          }
-        } else {
+        const { data, error } = await supabase
+          .from('transcriptions')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading transcriptions:', error);
           setTranscriptions([]);
+        } else {
+          setTranscriptions(data || []);
         }
       } catch (error) {
         console.error('Error loading transcriptions:', error);
         setTranscriptions([]);
+      } finally {
+        setLoading(false);
       }
     };
 
     loadTranscriptions();
   }, [userId]);
 
-  const saveTranscription = (transcription: TranscriptionRecord) => {
+  const saveTranscription = async (transcription: TranscriptionRecord) => {
     if (!userId) return;
 
-    const newTranscriptions = [transcription, ...transcriptions];
-    setTranscriptions(newTranscriptions);
-    
     try {
-      localStorage.setItem(
-        `${STORAGE_PREFIX}${userId}`,
-        JSON.stringify(newTranscriptions)
-      );
+      const { data, error } = await supabase
+        .from('transcriptions')
+        .insert([{
+          user_id: userId,
+          title: transcription.title,
+          transcription: transcription.transcription,
+          summary: transcription.summary,
+          tasks: transcription.tasks,
+          mode: transcription.mode,
+          language: transcription.language
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving transcription:', error);
+        throw new Error('Failed to save transcription');
+      }
+
+      // Add the new transcription to the beginning of the list
+      setTranscriptions(prev => [data, ...prev]);
+      return data;
     } catch (error) {
-      console.error('Error saving transcriptions:', error);
+      console.error('Error saving transcription:', error);
+      throw error;
     }
   };
 
-  const clearTranscriptions = () => {
+  const clearTranscriptions = async () => {
     if (!userId) return;
-    setTranscriptions([]);
-    localStorage.removeItem(`${STORAGE_PREFIX}${userId}`);
+
+    try {
+      const { error } = await supabase
+        .from('transcriptions')
+        .delete()
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error clearing transcriptions:', error);
+        throw new Error('Failed to clear transcriptions');
+      }
+
+      setTranscriptions([]);
+    } catch (error) {
+      console.error('Error clearing transcriptions:', error);
+      throw error;
+    }
   };
 
-  return { transcriptions, saveTranscription, clearTranscriptions };
+  return { 
+    transcriptions, 
+    loading,
+    saveTranscription, 
+    clearTranscriptions 
+  };
 }
