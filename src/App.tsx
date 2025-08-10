@@ -51,6 +51,32 @@ function App() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
 
+  // Global error handler
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('🚨 Global error caught:', event.error);
+      console.error('🚨 Error details:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        stack: event.error?.stack
+      });
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('🚨 Unhandled promise rejection:', event.reason);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   useEffect(() => {
     const savedLanguage = localStorage.getItem('preferredLanguage');
     if (savedLanguage) {
@@ -547,7 +573,15 @@ function App() {
                   New Memo
                 </button>
                 <button
-                  onClick={() => setShowHistory(!showHistory)}
+                  onClick={() => {
+                    try {
+                      console.log('🔍 Switching to history view with', transcriptions.length, 'transcriptions');
+                      setShowHistory(!showHistory);
+                    } catch (error) {
+                      console.error('🚨 Error toggling history:', error);
+                      alert('Error loading history. Check console for details.');
+                    }
+                  }}
                   className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   {showHistory ? 'Hide History' : 'View History'}
@@ -570,14 +604,45 @@ function App() {
                   </div>
                 )}
               </div>
-              <TranscriptionHistory
-                transcriptions={transcriptions}
-                language={selectedLanguage}
-                onSelect={(record) => {
-                  setResults(record.content);
-                  setShowHistory(false);
-                }}
-              />
+              {/* Error boundary for history */}
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-6">Recording History</h2>
+                {transcriptions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 text-lg mb-2">No recordings found</p>
+                    <p className="text-gray-400 text-sm">Start by creating your first voice memo or task list</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {transcriptions.map((record, index) => (
+                      <div
+                        key={record.id || index}
+                        className="group bg-gray-50 rounded-lg p-4 hover:shadow-md hover:bg-gray-100 transition-all cursor-pointer"
+                        onClick={() => {
+                          try {
+                            setResults(record.content);
+                            setShowHistory(false);
+                          } catch (error) {
+                            console.error('Error selecting record:', error);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h3 className="text-sm font-medium text-gray-900 mb-1">
+                              {record.title || record.mode || 'Untitled'}
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                              {record.createdAt ? new Date(record.createdAt).toLocaleDateString() : 'No date'}
+                            </p>
+                          </div>
+                          <div className="text-gray-400">→</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="space-y-8">
