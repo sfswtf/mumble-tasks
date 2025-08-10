@@ -620,10 +620,31 @@ function App() {
                         className="group bg-gray-50 rounded-lg p-4 hover:shadow-md hover:bg-gray-100 transition-all cursor-pointer"
                         onClick={() => {
                           try {
+                            console.log('🔍 Clicked record:', {
+                              id: record.id,
+                              title: record.title,
+                              mode: record.mode,
+                              hasContent: !!record.content,
+                              contentType: typeof record.content,
+                              contentKeys: record.content ? Object.keys(record.content) : 'none'
+                            });
+                            
+                            if (!record.content) {
+                              console.warn('⚠️ Record has no content, cannot display');
+                              alert('This memo has no content to display');
+                              return;
+                            }
+                            
+                            console.log('✅ Setting results and hiding history');
                             setResults(record.content);
                             setShowHistory(false);
+                            
+                            // Also make sure we're in the right step
+                            setCurrentStep('process');
+                            
                           } catch (error) {
-                            console.error('Error selecting record:', error);
+                            console.error('🚨 Error selecting record:', error);
+                            alert(`Error opening memo: ${error instanceof Error ? error.message : 'Unknown error'}`);
                           }
                         }}
                       >
@@ -634,6 +655,8 @@ function App() {
                             </h3>
                             <p className="text-xs text-gray-500">
                               {record.createdAt ? new Date(record.createdAt).toLocaleDateString() : 'No date'}
+                              {record.mode && ` • ${record.mode}`}
+                              {record.content ? ' • Has content' : ' • No content'}
                             </p>
                           </div>
                           <div className="text-gray-400">→</div>
