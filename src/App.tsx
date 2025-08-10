@@ -51,6 +51,10 @@ function App() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
 
+  // TEMPORARY: Bypass authentication for testing
+  const mockUser = { id: 'test-user-123', email: 'test@example.com' };
+  const effectiveUser = user || mockUser;
+
   useEffect(() => {
     const savedLanguage = localStorage.getItem('preferredLanguage');
     if (savedLanguage) {
@@ -185,10 +189,11 @@ function App() {
       return;
     }
     
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
+    // TEMPORARY: Skip auth check for testing
+    // if (!effectiveUser) {
+    //   setShowAuthModal(true);
+    //   return;
+    // }
     
     // Clear any existing draft transcription when starting a new process
     setDraftTranscription(null);
@@ -232,19 +237,20 @@ function App() {
         };
 
         setResults(result);
-        saveTranscription({
-          id: result.id,
-          userId: user.id,
-          transcription,
-          type: biographyType,
-          content: result,
-          title: result.title,
-          createdAt: result.createdAt,
-          language: selectedLanguage,
-          mode: biographyType === 'tasks' ? 'tasks' : 'biography',
-          summary: summary,
-          tasks: result.tasks
-        });
+        // TEMPORARY: Skip saving to database for testing
+        // saveTranscription({
+        //   id: result.id,
+        //   userId: effectiveUser.id,
+        //   transcription,
+        //   type: biographyType,
+        //   content: result,
+        //   title: result.title,
+        //   createdAt: result.createdAt,
+        //   language: selectedLanguage,
+        //   mode: biographyType === 'tasks' ? 'tasks' : 'biography',
+        //   summary: summary,
+        //   tasks: result.tasks
+        // });
 
         setCompletedSteps(prev => [...prev, 'process']);
       } else if (biographyType === 'content-creator') {
@@ -274,18 +280,19 @@ function App() {
         };
 
         setResults(result);
-        saveTranscription({
-          id: result.id,
-          userId: user.id,
-          transcription,
-          type: biographyType,
-          content: result,
-          title: result.title,
-          createdAt: result.createdAt,
-          language: selectedLanguage,
-          mode: biographyType,
-          summary: scriptContent.content ? scriptContent.content.slice(0, 200) + '...' : undefined
-        });
+        // TEMPORARY: Skip saving to database for testing
+        // saveTranscription({
+        //   id: result.id,
+        //   userId: effectiveUser.id,
+        //   transcription,
+        //   type: biographyType,
+        //   content: result,
+        //   title: result.title,
+        //   createdAt: result.createdAt,
+        //   language: selectedLanguage,
+        //   mode: biographyType,
+        //   summary: scriptContent.content ? scriptContent.content.slice(0, 200) + '...' : undefined
+        // });
 
         setCompletedSteps(prev => [...prev, 'process']);
       } else {
@@ -314,18 +321,19 @@ function App() {
         };
 
         setResults(result);
-        saveTranscription({
-          id: result.id,
-          userId: user.id,
-          transcription,
-          type: biographyType,
-          content: result,
-          title: result.title,
-          createdAt: result.createdAt,
-          language: selectedLanguage,
-          mode: biographyType,
-          summary: content.content ? content.content.slice(0, 200) + '...' : undefined
-        });
+        // TEMPORARY: Skip saving to database for testing
+        // saveTranscription({
+        //   id: result.id,
+        //   userId: effectiveUser.id,
+        //   transcription,
+        //   type: biographyType,
+        //   content: result,
+        //   title: result.title,
+        //   createdAt: result.createdAt,
+        //   language: selectedLanguage,
+        //   mode: biographyType,
+        //   summary: content.content ? content.content.slice(0, 200) + '...' : undefined
+        // });
 
         setCompletedSteps(prev => [...prev, 'process']);
       }
@@ -411,11 +419,12 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    if (!user) {
-      setShowAuthModal(true);
-    }
-  }, [user]);
+  // TEMPORARY: Comment out auth modal trigger
+  // useEffect(() => {
+  //   if (!user) {
+  //     setShowAuthModal(true);
+  //   }
+  // }, [user]);
 
   useEffect(() => {
     if (draftTranscription) {
@@ -504,7 +513,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header 
-        user={user}
+        user={effectiveUser}
         onAuthClick={() => setShowAuthModal(true)}
         onSignOut={signOut}
         language={selectedLanguage}
@@ -513,6 +522,11 @@ function App() {
       />
       
       <main className="container mx-auto px-4 py-8 max-w-5xl">
+        {/* TEMPORARY: Testing mode indicator */}
+        <div className="mb-4 p-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+          🧪 <strong>Testing Mode:</strong> Authentication bypassed - API testing in progress
+        </div>
+
         {appError && (
           <div className="mb-4">
             <ErrorMessage 
@@ -524,7 +538,8 @@ function App() {
           </div>
         )}
 
-        {user && (
+        {/* TEMPORARY: Hide search and history for testing */}
+        {false && effectiveUser && (
           <div className="flex flex-col space-y-4 mb-6">
             <div className="flex justify-between items-center">
               <SearchBar
@@ -551,7 +566,9 @@ function App() {
           </div>
         )}
 
-        {!user ? (
+        {/* TEMPORARY: Always show app content for testing, bypass auth check */}
+        {/* {!user ? ( */}
+        {false ? (
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               Please sign in to continue
