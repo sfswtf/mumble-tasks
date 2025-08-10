@@ -9,27 +9,34 @@ export function useTranscriptions(userId: string | null) {
   // Load transcriptions when userId changes
   useEffect(() => {
     const loadTranscriptions = async () => {
+      console.log('🔍 Loading transcriptions for user:', userId);
+      
       if (!userId) {
+        console.log('❌ No userId, setting empty transcriptions');
         setTranscriptions([]);
         return;
       }
 
       setLoading(true);
       try {
+        console.log('📡 Querying transcriptions table...');
         const { data, error } = await supabase
           .from('transcriptions')
           .select('*')
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
+        console.log('📊 Query result:', { data, error, count: data?.length });
+
         if (error) {
-          console.error('Error loading transcriptions:', error);
+          console.error('❌ Error loading transcriptions:', error);
           setTranscriptions([]);
         } else {
+          console.log('✅ Loaded transcriptions:', data?.length || 0);
           setTranscriptions(data || []);
         }
       } catch (error) {
-        console.error('Error loading transcriptions:', error);
+        console.error('❌ Exception loading transcriptions:', error);
         setTranscriptions([]);
       } finally {
         setLoading(false);

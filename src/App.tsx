@@ -560,14 +560,25 @@ function App() {
         {/* TEMPORARY: Always show app content for testing, bypass auth check */}
         {user ? (
           showHistory ? (
-            <TranscriptionHistory
-              transcriptions={transcriptions}
-              language={selectedLanguage}
-              onSelect={(record) => {
-                setResults(record.content);
-                setShowHistory(false);
-              }}
-            />
+            <div>
+              {/* Debug info */}
+              <div className="mb-4 p-3 bg-blue-100 border-l-4 border-blue-500 text-blue-700">
+                🔍 <strong>Debug:</strong> User ID: {user.id}, Transcriptions: {transcriptions.length}
+                {transcriptions.length > 0 && (
+                  <div className="mt-2">
+                    Latest: {transcriptions[0]?.title || 'No title'} ({transcriptions[0]?.mode})
+                  </div>
+                )}
+              </div>
+              <TranscriptionHistory
+                transcriptions={transcriptions}
+                language={selectedLanguage}
+                onSelect={(record) => {
+                  setResults(record.content);
+                  setShowHistory(false);
+                }}
+              />
+            </div>
           ) : (
             <div className="space-y-8">
               {/* Mode Indicator - shows current mode and step */}
