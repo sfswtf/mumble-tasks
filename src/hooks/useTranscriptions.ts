@@ -59,7 +59,8 @@ export function useTranscriptions(userId: string | null) {
           summary: transcription.summary,
           tasks: transcription.tasks,
           mode: transcription.mode,
-          language: transcription.language
+          language: transcription.language,
+          content: transcription.content  // ADD THE MISSING CONTENT FIELD!
         }])
         .select()
         .single();
