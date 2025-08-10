@@ -51,10 +51,6 @@ function App() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
 
-  // TEMPORARY: Bypass authentication for testing
-  const mockUser = { id: 'test-user-123', email: 'test@example.com' };
-  const effectiveUser = user || mockUser;
-
   useEffect(() => {
     const savedLanguage = localStorage.getItem('preferredLanguage');
     if (savedLanguage) {
@@ -189,11 +185,10 @@ function App() {
       return;
     }
     
-    // TEMPORARY: Skip auth check for testing
-    // if (!effectiveUser) {
-    //   setShowAuthModal(true);
-    //   return;
-    // }
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
     
     // Clear any existing draft transcription when starting a new process
     setDraftTranscription(null);
@@ -237,20 +232,19 @@ function App() {
         };
 
         setResults(result);
-        // TEMPORARY: Skip saving to database for testing
-        // saveTranscription({
-        //   id: result.id,
-        //   userId: effectiveUser.id,
-        //   transcription,
-        //   type: biographyType,
-        //   content: result,
-        //   title: result.title,
-        //   createdAt: result.createdAt,
-        //   language: selectedLanguage,
-        //   mode: biographyType === 'tasks' ? 'tasks' : 'biography',
-        //   summary: summary,
-        //   tasks: result.tasks
-        // });
+        saveTranscription({
+          id: result.id,
+          userId: user.id,
+          transcription,
+          type: biographyType,
+          content: result,
+          title: result.title,
+          createdAt: result.createdAt,
+          language: selectedLanguage,
+          mode: biographyType === 'tasks' ? 'tasks' : 'biography',
+          summary: summary,
+          tasks: result.tasks
+        });
 
         setCompletedSteps(prev => [...prev, 'process']);
       } else if (biographyType === 'content-creator') {
@@ -280,19 +274,18 @@ function App() {
         };
 
         setResults(result);
-        // TEMPORARY: Skip saving to database for testing
-        // saveTranscription({
-        //   id: result.id,
-        //   userId: effectiveUser.id,
-        //   transcription,
-        //   type: biographyType,
-        //   content: result,
-        //   title: result.title,
-        //   createdAt: result.createdAt,
-        //   language: selectedLanguage,
-        //   mode: biographyType,
-        //   summary: scriptContent.content ? scriptContent.content.slice(0, 200) + '...' : undefined
-        // });
+        saveTranscription({
+          id: result.id,
+          userId: user.id,
+          transcription,
+          type: biographyType,
+          content: result,
+          title: result.title,
+          createdAt: result.createdAt,
+          language: selectedLanguage,
+          mode: biographyType,
+          summary: scriptContent.content ? scriptContent.content.slice(0, 200) + '...' : undefined
+        });
 
         setCompletedSteps(prev => [...prev, 'process']);
       } else {
@@ -321,19 +314,18 @@ function App() {
         };
 
         setResults(result);
-        // TEMPORARY: Skip saving to database for testing
-        // saveTranscription({
-        //   id: result.id,
-        //   userId: effectiveUser.id,
-        //   transcription,
-        //   type: biographyType,
-        //   content: result,
-        //   title: result.title,
-        //   createdAt: result.createdAt,
-        //   language: selectedLanguage,
-        //   mode: biographyType,
-        //   summary: content.content ? content.content.slice(0, 200) + '...' : undefined
-        // });
+        saveTranscription({
+          id: result.id,
+          userId: user.id,
+          transcription,
+          type: biographyType,
+          content: result,
+          title: result.title,
+          createdAt: result.createdAt,
+          language: selectedLanguage,
+          mode: biographyType,
+          summary: content.content ? content.content.slice(0, 200) + '...' : undefined
+        });
 
         setCompletedSteps(prev => [...prev, 'process']);
       }
@@ -419,12 +411,11 @@ function App() {
     }
   };
 
-  // TEMPORARY: Comment out auth modal trigger
-  // useEffect(() => {
-  //   if (!user) {
-  //     setShowAuthModal(true);
-  //   }
-  // }, [user]);
+  useEffect(() => {
+    if (!user) {
+      setShowAuthModal(true);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (draftTranscription) {
@@ -513,7 +504,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header 
-        user={effectiveUser}
+        user={user}
         onAuthClick={() => setShowAuthModal(true)}
         onSignOut={signOut}
         language={selectedLanguage}
@@ -523,9 +514,9 @@ function App() {
       
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         {/* TEMPORARY: Testing mode indicator */}
-        <div className="mb-4 p-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+        {/* <div className="mb-4 p-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
           🧪 <strong>Testing Mode:</strong> Authentication bypassed - API testing in progress
-        </div>
+        </div> */}
 
         {appError && (
           <div className="mb-4">
@@ -539,7 +530,7 @@ function App() {
         )}
 
         {/* TEMPORARY: Hide search and history for testing */}
-        {false && effectiveUser && (
+        {user && (
           <div className="flex flex-col space-y-4 mb-6">
             <div className="flex justify-between items-center">
               <SearchBar
@@ -567,8 +558,81 @@ function App() {
         )}
 
         {/* TEMPORARY: Always show app content for testing, bypass auth check */}
-        {/* {!user ? ( */}
-        {false ? (
+        {user ? (
+          showHistory ? (
+            <TranscriptionHistory
+              transcriptions={transcriptions}
+              language={selectedLanguage}
+              onSelect={(record) => {
+                setResults(record.content);
+                setShowHistory(false);
+              }}
+            />
+          ) : (
+            <div className="space-y-8">
+              {/* Mode Indicator - shows current mode and step */}
+              <ModeIndicator
+                currentMode={biographyType}
+                currentStep={currentStep}
+                onBackToModeSelection={handleBackToModeSelection}
+                language={selectedLanguage}
+              />
+
+              {/* Step Progress Indicator */}
+              <StepProgressIndicator
+                currentStep={currentStep}
+                mode={biographyType}
+                language={selectedLanguage}
+                onStepClick={handleStepNavigation}
+                completedSteps={completedSteps}
+              />
+
+              {currentStep === 'mode' && (
+                <BiographyTypeSelector
+                  onTypeSelect={handleTypeSelect}
+                  language={selectedLanguage}
+                  resetKey={resetKey}
+                />
+              )}
+
+              {currentStep === 'customize' && !results && (
+                <BiographyCustomization
+                  onCustomize={handleCustomization}
+                  selectedType={biographyType}
+                  platform={customization.platform}
+                  language={selectedLanguage}
+                />
+              )}
+
+              {(currentStep === 'language' || currentStep === 'record' || currentStep === 'process') && !results && (
+                <StepWizard
+                  currentStep={currentStep}
+                  selectedLanguage={selectedLanguage}
+                  selectedFile={selectedFile}
+                  onLanguageSelect={handleLanguageSelect}
+                  onFileSelect={handleFileSelect}
+                  onProcess={handleProcess}
+                  isProcessing={isProcessing}
+                  mode={biographyType === 'tasks' ? 'tasks' : 'meeting'}
+                />
+              )}
+
+              {isProcessing && (
+                <ProcessingIndicator progress={progress} language={selectedLanguage} />
+              )}
+
+              {error && (
+                <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+                  {error}
+                </div>
+              )}
+
+              {results && !isProcessing && (
+                renderResults()
+              )}
+            </div>
+          )
+        ) : (
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               Please sign in to continue
@@ -579,78 +643,6 @@ function App() {
             >
               Sign In
             </button>
-          </div>
-        ) : showHistory ? (
-          <TranscriptionHistory
-            transcriptions={transcriptions}
-            language={selectedLanguage}
-            onSelect={(record) => {
-              setResults(record.content);
-              setShowHistory(false);
-            }}
-          />
-        ) : (
-          <div className="space-y-8">
-            {/* Mode Indicator - shows current mode and step */}
-            <ModeIndicator
-              currentMode={biographyType}
-              currentStep={currentStep}
-              onBackToModeSelection={handleBackToModeSelection}
-              language={selectedLanguage}
-            />
-
-            {/* Step Progress Indicator */}
-            <StepProgressIndicator
-              currentStep={currentStep}
-              mode={biographyType}
-              language={selectedLanguage}
-              onStepClick={handleStepNavigation}
-              completedSteps={completedSteps}
-            />
-
-            {currentStep === 'mode' && (
-              <BiographyTypeSelector
-                onTypeSelect={handleTypeSelect}
-                language={selectedLanguage}
-                resetKey={resetKey}
-              />
-            )}
-
-            {currentStep === 'customize' && !results && (
-              <BiographyCustomization
-                onCustomize={handleCustomization}
-                selectedType={biographyType}
-                platform={customization.platform}
-                language={selectedLanguage}
-              />
-            )}
-
-            {(currentStep === 'language' || currentStep === 'record' || currentStep === 'process') && !results && (
-              <StepWizard
-                currentStep={currentStep}
-                selectedLanguage={selectedLanguage}
-                selectedFile={selectedFile}
-                onLanguageSelect={handleLanguageSelect}
-                onFileSelect={handleFileSelect}
-                onProcess={handleProcess}
-                isProcessing={isProcessing}
-                mode={biographyType === 'tasks' ? 'tasks' : 'meeting'}
-              />
-            )}
-
-            {isProcessing && (
-              <ProcessingIndicator progress={progress} language={selectedLanguage} />
-            )}
-
-            {error && (
-              <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
-                {error}
-              </div>
-            )}
-
-            {results && !isProcessing && (
-              renderResults()
-            )}
           </div>
         )}
       </main>
