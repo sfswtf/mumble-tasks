@@ -101,6 +101,7 @@ export default function StepWizard({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-8"
+            id="record-upload-section"
           >
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -114,11 +115,12 @@ export default function StepWizard({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 min-h-[400px]">
               {/* Record Audio */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="bg-white rounded-xl shadow-lg border-2 border-dashed border-gray-200 hover:border-blue-400 transition-all duration-300 p-6"
+                id="record-audio-section"
               >
                 <div className="text-center mb-4">
                   <div className="bg-blue-100 rounded-full p-3 w-16 h-16 mx-auto mb-3 flex items-center justify-center">
@@ -139,6 +141,7 @@ export default function StepWizard({
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="bg-white rounded-xl shadow-lg border-2 border-dashed border-gray-200 hover:border-green-400 transition-all duration-300 p-6"
+                id="upload-audio-section"
               >
                 <div className="text-center mb-4">
                   <div className="bg-green-100 rounded-full p-3 w-16 h-16 mx-auto mb-3 flex items-center justify-center">
@@ -152,6 +155,7 @@ export default function StepWizard({
                 <UploadSection
                   onFileSelected={handleFileSelected}
                   onError={handleError}
+                  language={selectedLanguage}
                 />
               </motion.div>
             </div>
@@ -170,6 +174,7 @@ export default function StepWizard({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-8"
+            id="process-audio-section"
           >
             <div className="bg-white rounded-xl shadow-lg p-8 text-center">
               <div className="bg-blue-100 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center">

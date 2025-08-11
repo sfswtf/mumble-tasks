@@ -11,6 +11,30 @@ interface ContentProcessorProps {
   onError: (error: string) => void;
 }
 
+const getTranslations = (language: string) => {
+  const translations = {
+    en: {
+      noAudioFile: 'No audio file selected',
+      transcribing: 'Transcribing audio...',
+      transcriptionComplete: 'Transcription complete. Generating content...',
+      contentComplete: 'Content generation complete!',
+      processing: 'Processing...',
+      processAudio: 'Process Audio',
+      unknownError: 'An unknown error occurred during processing'
+    },
+    no: {
+      noAudioFile: 'Ingen lydfil valgt',
+      transcribing: 'Transkriberer lyd...',
+      transcriptionComplete: 'Transkripsjon fullført. Genererer innhold...',
+      contentComplete: 'Innholdsgenerering fullført!',
+      processing: 'Behandler...',
+      processAudio: 'Behandle Lyd',
+      unknownError: 'En ukjent feil oppstod under behandling'
+    }
+  };
+  return translations[language as keyof typeof translations] || translations.en;
+};
+
 const ContentProcessor: React.FC<ContentProcessorProps> = ({
   audioFile,
   preferences,
@@ -20,25 +44,26 @@ const ContentProcessor: React.FC<ContentProcessorProps> = ({
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState<string>('');
+  const t = getTranslations(language);
 
   const processAudio = async () => {
     if (!audioFile) {
-      onError('No audio file selected');
+      onError(t.noAudioFile);
       return;
     }
 
     setIsProcessing(true);
-    setProgress('Transcribing audio...');
+    setProgress(t.transcribing);
 
     try {
       // Step 1: Transcribe audio
       const { text } = await transcribeAudio(audioFile, language);
-      setProgress('Transcription complete. Generating content...');
+      setProgress(t.transcriptionComplete);
 
       // Step 2: Generate content with chunking support
       const content = await generateContent(text, preferences, language);
       
-      setProgress('Content generation complete!');
+      setProgress(t.contentComplete);
       onContentGenerated(content);
     } catch (error) {
       console.error('Processing error:', error);
@@ -48,7 +73,7 @@ const ContentProcessor: React.FC<ContentProcessorProps> = ({
       } else if (error instanceof Error) {
         onError(error.message);
       } else {
-        onError('An unknown error occurred during processing');
+        onError(t.unknownError);
       }
     } finally {
       setIsProcessing(false);
@@ -66,7 +91,7 @@ const ContentProcessor: React.FC<ContentProcessorProps> = ({
             : 'bg-blue-600 hover:bg-blue-700 text-white'
         }`}
       >
-        {isProcessing ? 'Processing...' : 'Process Audio'}
+        {isProcessing ? t.processing : t.processAudio}
       </button>
       
       {isProcessing && (

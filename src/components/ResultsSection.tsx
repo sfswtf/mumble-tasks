@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, ListTodo, Sparkles, Copy, Check, ChevronDown, ChevronUp, Download, Eye, EyeOff, Calendar, Video, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Task } from '../types';
@@ -31,7 +31,11 @@ const getTranslations = (language: string) => {
       },
       noResults: 'No results available. Please try again.',
       readyToDownload: 'Ready-to-download executive summary with full transcript available below.',
-      transcriptNote: 'Unfiltered transcript from your audio recording'
+      transcriptNote: 'Unfiltered transcript from your audio recording',
+      addToCalendar: 'Add to Calendar',
+      completeAnalysis: 'Complete analysis with executive summary and action items',
+      downloadWord: 'Download Word',
+      downloadPDF: 'Download PDF'
     },
     no: {
       executiveSummary: 'Sammendrag',
@@ -49,7 +53,11 @@ const getTranslations = (language: string) => {
       },
       noResults: 'Ingen resultater tilgjengelig. Vennligst prøv igjen.',
       readyToDownload: 'Ferdig sammendrag klart for nedlasting med full transkripsjon tilgjengelig nedenfor.',
-      transcriptNote: 'Ufiltrert transkripsjon fra lydopptaket ditt'
+      transcriptNote: 'Ufiltrert transkripsjon fra lydopptaket ditt',
+      addToCalendar: 'Legg til i Kalender',
+      completeAnalysis: 'Komplett analyse med sammendrag og handlingspunkter',
+      downloadWord: 'Last ned Word',
+      downloadPDF: 'Last ned PDF'
     }
   };
   return translations[language as keyof typeof translations] || translations.en;
@@ -63,7 +71,20 @@ export default function ResultsSection({ results, onUpdateTask, language }: Resu
   });
   const [showTranscript, setShowTranscript] = useState(false);
   const [editingTask, setEditingTask] = useState<number | null>(null);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const t = getTranslations(language);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showDownloadMenu && !(event.target as Element).closest('.download-dropdown')) {
+        setShowDownloadMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDownloadMenu]);
 
   if (!results) {
     return (
@@ -195,6 +216,302 @@ export default function ResultsSection({ results, onUpdateTask, language }: Resu
     URL.revokeObjectURL(url);
   };
 
+  const downloadAsWord = () => {
+    // Create HTML content with professional Word-compatible formatting
+    const currentDate = new Date().toLocaleDateString(language === 'no' ? 'no-NO' : 'en-US');
+    const fileName = `${language === 'no' ? 'sammendrag' : 'summary'}_${new Date().toISOString().split('T')[0]}`;
+    
+    let htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${t.executiveSummary} - ${currentDate}</title>
+    <style>
+        body { 
+            font-family: 'Calibri', 'Arial', sans-serif; 
+            line-height: 1.6; 
+            margin: 40px; 
+            color: #333;
+            background-color: white;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            border-bottom: 2px solid #0073e6;
+            padding-bottom: 20px;
+        }
+        .title { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #0073e6; 
+            margin: 0;
+        }
+        .subtitle { 
+            font-size: 14px; 
+            color: #666; 
+            margin: 5px 0 0 0;
+        }
+        .section { 
+            margin: 30px 0; 
+            page-break-inside: avoid;
+        }
+        .section-title { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #0073e6; 
+            margin-bottom: 15px;
+            border-left: 4px solid #0073e6;
+            padding-left: 10px;
+        }
+        .content { 
+            margin-bottom: 20px; 
+            text-align: justify;
+            line-height: 1.8;
+        }
+        .task-item { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .task-text { 
+            font-weight: bold; 
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .task-details { 
+            font-size: 14px; 
+            color: #666;
+            margin-left: 20px;
+        }
+        .priority-high { color: #d32f2f; font-weight: bold; }
+        .priority-medium { color: #f57c00; font-weight: bold; }
+        .priority-low { color: #388e3c; font-weight: bold; }
+        .transcript { 
+            background-color: #f5f5f5; 
+            padding: 20px; 
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+        @media print {
+            body { margin: 20px; }
+            .section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">${t.executiveSummary}</h1>
+        <p class="subtitle">${language === 'no' ? 'Generert' : 'Generated'} ${currentDate} | MumbleTasks</p>
+    </div>
+    
+    <div class="section">
+        <h2 class="section-title">${t.executiveSummary}</h2>
+        <div class="content">${results.summary.replace(/\n/g, '<br>')}</div>
+    </div>`;
+
+    if (results.tasks && results.tasks.length > 0) {
+      htmlContent += `
+    <div class="section">
+        <h2 class="section-title">${t.actionItems}</h2>`;
+      
+      results.tasks.forEach((task, index) => {
+        const priorityClass = `priority-${task.priority.toLowerCase()}`;
+        htmlContent += `
+        <div class="task-item">
+            <div class="task-text">${index + 1}. ${task.text}</div>
+            <div class="task-details">
+                <strong>${language === 'no' ? 'Prioritet' : 'Priority'}:</strong> 
+                <span class="${priorityClass}">${t.priority[task.priority as keyof typeof t.priority]}</span><br>
+                <strong>${language === 'no' ? 'Forfallsdato' : 'Due Date'}:</strong> 
+                ${task.dueDate}${task.dueTime ? ` ${language === 'no' ? 'klokka' : 'at'} ${task.dueTime}` : ''}
+            </div>
+        </div>`;
+      });
+      
+      htmlContent += `
+    </div>`;
+    }
+
+    htmlContent += `
+    <div class="section">
+        <h2 class="section-title">${t.fullTranscript}</h2>
+        <p><em>${t.transcriptNote}</em></p>
+        <div class="transcript">${results.transcription}</div>
+    </div>
+    
+    <div class="footer">
+        <p>${language === 'no' ? 'Dokumentet ble generert av' : 'Document generated by'} MumbleTasks © ${new Date().getFullYear()}</p>
+    </div>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadAsPDF = async () => {
+    // For PDF generation, we'll create a printable HTML version
+    const currentDate = new Date().toLocaleDateString(language === 'no' ? 'no-NO' : 'en-US');
+    const fileName = `${language === 'no' ? 'sammendrag' : 'summary'}_${new Date().toISOString().split('T')[0]}`;
+    
+    // Create the same HTML content as Word but optimized for PDF
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${t.executiveSummary} - ${currentDate}</title>
+    <style>
+        @page { margin: 2cm; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            line-height: 1.6; 
+            margin: 0; 
+            color: #333;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            border-bottom: 2px solid #0073e6;
+            padding-bottom: 20px;
+        }
+        .title { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #0073e6; 
+            margin: 0;
+        }
+        .subtitle { 
+            font-size: 14px; 
+            color: #666; 
+            margin: 5px 0 0 0;
+        }
+        .section { 
+            margin: 20px 0; 
+            page-break-inside: avoid;
+        }
+        .section-title { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #0073e6; 
+            margin-bottom: 15px;
+            border-left: 4px solid #0073e6;
+            padding-left: 10px;
+        }
+        .content { 
+            margin-bottom: 20px; 
+            text-align: justify;
+            line-height: 1.8;
+        }
+        .task-item { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border: 1px solid #e0e0e0; 
+            background-color: #f9f9f9;
+        }
+        .task-text { 
+            font-weight: bold; 
+            margin-bottom: 5px;
+        }
+        .task-details { 
+            font-size: 14px; 
+            color: #666;
+            margin-left: 15px;
+        }
+        .priority-high { color: #d32f2f; font-weight: bold; }
+        .priority-medium { color: #f57c00; font-weight: bold; }
+        .priority-low { color: #388e3c; font-weight: bold; }
+        .transcript { 
+            background-color: #f5f5f5; 
+            padding: 15px; 
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.4;
+            font-size: 12px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            font-size: 10px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">${t.executiveSummary}</h1>
+        <p class="subtitle">${language === 'no' ? 'Generert' : 'Generated'} ${currentDate} | MumbleTasks</p>
+    </div>
+    
+    <div class="section">
+        <h2 class="section-title">${t.executiveSummary}</h2>
+        <div class="content">${results.summary.replace(/\n/g, '<br>')}</div>
+    </div>
+    
+    ${results.tasks && results.tasks.length > 0 ? `
+    <div class="section">
+        <h2 class="section-title">${t.actionItems}</h2>
+        ${results.tasks.map((task, index) => `
+        <div class="task-item">
+            <div class="task-text">${index + 1}. ${task.text}</div>
+            <div class="task-details">
+                <strong>${language === 'no' ? 'Prioritet' : 'Priority'}:</strong> 
+                <span class="priority-${task.priority.toLowerCase()}">${t.priority[task.priority as keyof typeof t.priority]}</span><br>
+                <strong>${language === 'no' ? 'Forfallsdato' : 'Due Date'}:</strong> 
+                ${task.dueDate}${task.dueTime ? ` ${language === 'no' ? 'klokka' : 'at'} ${task.dueTime}` : ''}
+            </div>
+        </div>`).join('')}
+    </div>` : ''}
+    
+    <div class="section">
+        <h2 class="section-title">${t.fullTranscript}</h2>
+        <p><em>${t.transcriptNote}</em></p>
+        <div class="transcript">${results.transcription}</div>
+    </div>
+    
+    <div class="footer">
+        <p>${language === 'no' ? 'Dokumentet ble generert av' : 'Document generated by'} MumbleTasks © ${new Date().getFullYear()}</p>
+    </div>
+</body>
+</html>`;
+
+    // Open in new window for printing to PDF
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      
+      // Wait for content to load, then trigger print
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+      };
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Download Actions */}
@@ -206,7 +523,7 @@ export default function ResultsSection({ results, onUpdateTask, language }: Resu
             </div>
             <div>
               <h3 className="font-semibold text-gray-800">{t.readyToDownload}</h3>
-              <p className="text-sm text-gray-600">Complete analysis with executive summary and action items</p>
+              <p className="text-sm text-gray-600">{t.completeAnalysis}</p>
             </div>
           </div>
           <div className="flex space-x-3">
@@ -221,13 +538,50 @@ export default function ResultsSection({ results, onUpdateTask, language }: Resu
               )}
               <span className="text-sm">{copiedStates.fullDocument ? t.copied : t.copyToClipboard}</span>
             </button>
-            <button
-              onClick={downloadAsTextFile}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              <span className="text-sm">{t.downloadSummary}</span>
-            </button>
+            
+            {/* Professional Download Dropdown */}
+            <div className="relative download-dropdown">
+              <button
+                onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                <span className="text-sm">{t.downloadSummary}</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              <AnimatePresence>
+                {showDownloadMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50 min-w-[160px]"
+                  >
+                    <button
+                      onClick={() => {
+                        downloadAsWord();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-2 first:rounded-t-lg border-b border-gray-100"
+                    >
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-medium">{t.downloadWord}</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        downloadAsPDF();
+                        setShowDownloadMenu(false);
+                      }}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-2 last:rounded-b-lg"
+                    >
+                      <FileText className="w-4 h-4 text-red-600" />
+                      <span className="text-sm font-medium">{t.downloadPDF}</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
@@ -345,7 +699,7 @@ export default function ResultsSection({ results, onUpdateTask, language }: Resu
 
                   {/* Calendar Integration - RIGHT HERE ON EACH TASK */}
                   <div className="border-t pt-3 mt-3">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Add to Calendar</h4>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">{t.addToCalendar}</h4>
                     <div className="flex flex-wrap gap-2">
                       <a
                         href={createCalendarEvent(task, 'google')}

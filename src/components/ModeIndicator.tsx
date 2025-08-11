@@ -31,17 +31,11 @@ const getModeConfig = (mode: TranscriptionMode | null, language: string) => {
         color: 'orange',
         description: 'Creating structured articles'
       },
-      'script-generator': { 
+      'content-creator': { 
         icon: Video, 
-        name: 'Script Generator', 
+        name: 'Content Creator', 
         color: 'red',
-        description: 'Transform your voice into engaging scripts for social media platforms'
-      },
-      biography: { 
-        icon: BookOpen, 
-        name: 'Biography', 
-        color: 'purple',
-        description: 'Personal story creation'
+        description: 'Transform your voice into engaging content for social media platforms'
       }
     },
     no: {
@@ -63,23 +57,17 @@ const getModeConfig = (mode: TranscriptionMode | null, language: string) => {
         color: 'orange',
         description: 'Lager strukturerte artikler'
       },
-      'script-generator': { 
+      'content-creator': { 
         icon: Video, 
-        name: 'Manusgenerator', 
+        name: 'Innholdsproduksjon', 
         color: 'red',
-        description: 'Gjør stemmen din om til engasjerende manus for sosiale medier'
-      },
-      biography: { 
-        icon: BookOpen, 
-        name: 'Biografi', 
-        color: 'purple',
-        description: 'Personlig historie'
+        description: 'Gjør stemmen din om til engasjerende innhold for sosiale medier'
       }
     }
   };
 
   const langConfigs = configs[language as keyof typeof configs] || configs.en;
-  return mode ? langConfigs[mode] : null;
+  return mode ? langConfigs[mode as keyof typeof langConfigs] : null;
 };
 
 const getStepName = (step: string, language: string) => {

@@ -110,17 +110,17 @@ const Header: React.FC<HeaderProps> = ({
           >
             <div className="flex items-center space-x-4">
               {/* Logo Container with Professional Styling */}
-              <div className="relative p-2 rounded-lg bg-gradient-to-br from-white to-gray-50 shadow-sm border border-gray-100">
+              <div className="relative p-1 rounded-lg bg-gradient-to-br from-white to-gray-50 shadow-sm border border-gray-100">
                 <img 
                   src="/assets/images/mumble-logo.png"
                   alt="Mumble Tasks Logo"
-                  className="h-30 w-auto sm:h-36 lg:h-42 transition-all duration-200"
+                  className="h-8 w-auto sm:h-10 lg:h-12 transition-all duration-200"
                   onError={(e) => {
                     // Fallback to a default design if logo fails to load
                     e.currentTarget.style.display = 'none';
                     e.currentTarget.parentElement!.innerHTML = `
-                      <div class="h-30 w-30 sm:h-36 sm:w-36 lg:h-42 lg:w-42 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-18 h-18 sm:w-21 sm:h-21 lg:w-24 lg:h-24 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <div class="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 14l9-5-9-5-9 5 9 5z"/>
                           <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
                         </svg>

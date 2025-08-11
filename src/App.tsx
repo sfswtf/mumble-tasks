@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useTranscriptions } from './hooks/useTranscriptions';
 import Header from './components/Header';
@@ -23,6 +23,41 @@ import ErrorMessage from './components/ErrorMessage';
 import { TranscriptionMode, BiographyPreferences, DraftTranscription } from './types';
 import { SearchBar } from './components/SearchBar';
 
+// Add translation function
+const getTranslations = (language: string) => {
+  const translations = {
+    en: {
+      searchPlaceholder: 'Search your memos...',
+      newMemo: 'New Memo',
+      viewHistory: 'View History',
+      hideHistory: 'Hide History'
+    },
+    no: {
+      searchPlaceholder: 'Søk i notatene dine...',
+      newMemo: 'Nytt Notat',
+      viewHistory: 'Vis Historikk',
+      hideHistory: 'Skjul Historikk'
+    }
+  };
+  return translations[language as keyof typeof translations] || translations.en;
+};
+
+// Auto-scroll utility function
+const scrollToSection = (sectionId: string, offset: number = 100) => {
+  setTimeout(() => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  }, 100); // Small delay to ensure DOM is updated
+};
+
 function App() {
   const { user, signIn, signOut, signUp } = useAuth();
   const { transcriptions, saveTranscription } = useTranscriptions(user?.id || null);
@@ -35,7 +70,7 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [biographyType, setBiographyType] = useState<TranscriptionMode>('biography');
+  const [biographyType, setBiographyType] = useState<TranscriptionMode>('tasks');
   const [customization, setCustomization] = useState<BiographyPreferences>({
     tone: '',
     style: '',
@@ -50,6 +85,11 @@ function App() {
   const [searchResults, setSearchResults] = useState<Array<{ id: string; title: string; type: string; createdAt: string }>>([]);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
+
+  // Refs for auto-scrolling
+  const stepWizardRef = useRef<HTMLDivElement>(null);
+  const processingRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Global error handler
   useEffect(() => {
@@ -100,6 +140,7 @@ function App() {
         platform: platform
       }));
       setCurrentStep('customize');
+      scrollToSection('customize-section');
     } else {
       setBiographyType(type as TranscriptionMode);
       
@@ -113,8 +154,10 @@ function App() {
       
       if (type === 'tasks' || type === 'meeting') {
         setCurrentStep('language');
+        scrollToSection('step-wizard-section');
       } else {
         setCurrentStep('customize');
+        scrollToSection('customize-section');
       }
     }
   };
@@ -123,12 +166,14 @@ function App() {
     setCustomization(preferences);
     setCompletedSteps(prev => [...prev, 'customize']);
     setCurrentStep('language');
+    scrollToSection('step-wizard-section');
   };
 
   const handleLanguageSelect = (language: string) => {
     setSelectedLanguage(language);
     setCompletedSteps(prev => [...prev, 'language']);
     setCurrentStep('record');
+    scrollToSection('step-wizard-section');
   };
 
   const handleFileSelect = (file: File) => {
@@ -137,6 +182,8 @@ function App() {
     setError(null);
     setCompletedSteps(prev => [...prev, 'record']);
     setCurrentStep('process');
+    // Auto-scroll to processing section
+    scrollToSection('processing-section');
   };
 
   const handleStepNavigation = (step: string) => {
@@ -151,7 +198,7 @@ function App() {
       // Clear subsequent data if going backwards
       if (targetIndex < currentIndex) {
         if (step === 'mode') {
-          setBiographyType('biography');
+          setBiographyType('tasks');
           setCustomization({
             tone: '',
             style: '',
@@ -184,7 +231,7 @@ function App() {
 
   const handleBackToModeSelection = () => {
     setCurrentStep('mode');
-    setBiographyType('biography');
+    setBiographyType('tasks');
     setCustomization({
       tone: '',
       style: '',
@@ -223,6 +270,9 @@ function App() {
     setProgress(0);
     clearError();
     
+    // Auto-scroll to processing indicator
+    scrollToSection('processing-indicator', 50);
+    
     try {
       // Stage 1: File preparation (0-10%)
       setProgress(10);
@@ -253,7 +303,7 @@ function App() {
             dueDate: new Date().toISOString().split('T')[0],
           })),
           type: biographyType,
-          title: generateTitle(summary || transcription, selectedLanguage),
+          title: await generateTitle(summary || transcription, selectedLanguage),
           createdAt: new Date().toISOString()
         };
 
@@ -294,7 +344,7 @@ function App() {
           platform: customization.platform,
           customization,
           type: biographyType,
-          title: generateTitle(transcription, selectedLanguage),
+          title: await generateTitle(transcription, selectedLanguage),
           createdAt: new Date().toISOString(),
           language: selectedLanguage
         };
@@ -334,7 +384,7 @@ function App() {
           transcription,
           content,
           type: biographyType,
-          title: generateTitle(transcription, selectedLanguage),
+          title: await generateTitle(transcription, selectedLanguage),
           createdAt: new Date().toISOString(),
           language: selectedLanguage
         };
@@ -377,7 +427,7 @@ function App() {
     
     // Reset to initial state completely
     setCurrentStep('mode');
-    setBiographyType('biography');
+    setBiographyType('tasks');
     setCustomization({
       tone: '',
       style: '',
@@ -431,9 +481,15 @@ function App() {
         await signIn(email, password);
       }
       setShowAuthModal(false);
+      // Scroll to top after successful authentication
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     } catch (error) {
       console.error('Authentication error:', error);
-      handleError(error instanceof Error ? error : new Error('Authentication failed'));
+      // Re-throw the error so the modal can handle it
+      throw error instanceof Error ? error : new Error('Authentication failed');
     }
   };
 
@@ -527,6 +583,15 @@ function App() {
     return null;
   };
 
+  const translations = getTranslations(selectedLanguage);
+
+  // Add useEffect to scroll to results when they're ready
+  useEffect(() => {
+    if (results && !isProcessing) {
+      scrollToSection('results-section', 50);
+    }
+  }, [results, isProcessing]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header 
@@ -538,39 +603,41 @@ function App() {
         onNavigateHome={handleNewTranscription}
       />
       
-      <main className="container mx-auto px-4 py-8 max-w-5xl">
+      <main className="container mx-auto px-4 py-8 max-w-5xl min-h-screen">
         {/* TEMPORARY: Testing mode indicator */}
         {/* <div className="mb-4 p-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
           🧪 <strong>Testing Mode:</strong> Authentication bypassed - API testing in progress
         </div> */}
 
-        {appError && (
-          <div className="mb-4">
+        {/* Only show app errors when user is authenticated, not auth errors */}
+        {appError && user && (
+          <div className="mb-4 fixed top-20 left-1/2 transform -translate-x-1/2 w-full max-w-md z-50">
             <ErrorMessage 
               message={appError.message}
               onRetry={retryOperation}
               isRetrying={isRetrying}
               onDismiss={clearError}
+              language={selectedLanguage}
             />
           </div>
         )}
 
         {/* TEMPORARY: Hide search and history for testing */}
         {user && (
-          <div className="flex flex-col space-y-4 mb-6">
+          <div className="flex flex-col space-y-4 mb-8">
             <div className="flex justify-between items-center">
               <SearchBar
                 onSearch={handleSearch}
                 results={searchResults}
                 onSelect={handleSearchSelect}
-                placeholder="Search your memos..."
+                placeholder={translations.searchPlaceholder}
               />
               <div className="flex space-x-4">
                 <button
                   onClick={handleNewTranscription}
                   className="px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
-                  New Memo
+                  {translations.newMemo}
                 </button>
                 <button
                   onClick={() => {
@@ -584,7 +651,7 @@ function App() {
                   }}
                   className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
-                  {showHistory ? 'Hide History' : 'View History'}
+                  {showHistory ? translations.hideHistory : translations.viewHistory}
                 </button>
               </div>
             </div>
@@ -595,79 +662,118 @@ function App() {
         {user ? (
           showHistory ? (
             <div>
-              {/* Debug info */}
-              <div className="mb-4 p-3 bg-blue-100 border-l-4 border-blue-500 text-blue-700">
-                🔍 <strong>Debug:</strong> User ID: {user.id}, Transcriptions: {transcriptions.length}
-                {transcriptions.length > 0 && (
-                  <div className="mt-2">
-                    Latest: {transcriptions[0]?.title || 'No title'} ({transcriptions[0]?.mode})
-                  </div>
-                )}
-              </div>
-              {/* Error boundary for history */}
+              {/* Inlined TranscriptionHistory for better error handling */}
               <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-6">Recording History</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-6">
+                  {selectedLanguage === 'no' ? 'Opptakshistorikk' : 'Recording History'}
+                </h2>
                 {transcriptions.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 text-lg mb-2">No recordings found</p>
-                    <p className="text-gray-400 text-sm">Start by creating your first voice memo or task list</p>
+                    <p className="text-gray-500 text-lg mb-2">
+                      {selectedLanguage === 'no' ? 'Ingen opptak funnet' : 'No recordings found'}
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      {selectedLanguage === 'no' 
+                        ? 'Start med å lage ditt første lydmemo eller oppgaveliste' 
+                        : 'Start by creating your first voice memo or task list'
+                      }
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {transcriptions.map((record, index) => (
-                      <div
-                        key={record.id || index}
-                        className="group bg-gray-50 rounded-lg p-4 hover:shadow-md hover:bg-gray-100 transition-all cursor-pointer"
-                        onClick={() => {
-                          try {
-                            console.log('🔍 Clicked record:', {
-                              id: record.id,
-                              title: record.title,
-                              mode: record.mode,
-                              hasContent: !!record.content,
-                              contentType: typeof record.content,
-                              contentKeys: record.content ? Object.keys(record.content) : 'none'
-                            });
-                            
-                            if (!record.content) {
-                              console.warn('⚠️ Record has no content, cannot display');
-                              alert('This memo has no content to display');
-                              return;
+                    {transcriptions.map((record, index) => {
+                      // Helper function to get display name for mode
+                      const getModeDisplayName = (mode: string) => {
+                        const modeNames = selectedLanguage === 'no' ? {
+                          'tasks': 'Oppgaveliste',
+                          'meeting': 'Møtenotater', 
+                          'article': 'Artikkel',
+                          'content-creator': 'Innholdsskaper',
+                          'biography': 'Biografi'
+                        } : {
+                          'tasks': 'Task List',
+                          'meeting': 'Meeting Notes', 
+                          'article': 'Article',
+                          'content-creator': 'Content Creator',
+                          'biography': 'Biography'
+                        };
+                        return modeNames[mode as keyof typeof modeNames] || mode;
+                      };
+
+                      // Format date properly
+                      const formatDate = (dateString: string) => {
+                        const date = new Date(dateString);
+                        return date.toLocaleDateString(selectedLanguage === 'no' ? 'no-NO' : 'en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        });
+                      };
+
+                      return (
+                        <div
+                          key={record.id || index}
+                          className="group bg-gray-50 rounded-lg p-4 hover:shadow-md hover:bg-gray-100 transition-all cursor-pointer"
+                          onClick={() => {
+                            try {
+                              console.log('🔍 Clicked record:', {
+                                id: record.id,
+                                title: record.title,
+                                mode: record.mode,
+                                hasContent: !!record.content,
+                                contentType: typeof record.content,
+                                contentKeys: record.content ? Object.keys(record.content) : 'none'
+                              });
+                              
+                              if (!record.content) {
+                                console.warn('⚠️ Record has no content, cannot display');
+                                alert(selectedLanguage === 'no' 
+                                  ? 'Dette notatet har ikke noe innhold å vise' 
+                                  : 'This memo has no content to display'
+                                );
+                                return;
+                              }
+                              
+                              console.log('✅ Setting results and hiding history');
+                              setResults(record.content);
+                              setShowHistory(false);
+                              
+                              // Also make sure we're in the right step
+                              setCurrentStep('process');
+                              
+                            } catch (error) {
+                              console.error('🚨 Error selecting record:', error);
+                              alert(`${selectedLanguage === 'no' ? 'Feil ved åpning av notat' : 'Error opening memo'}: ${error instanceof Error ? error.message : 'Unknown error'}`);
                             }
-                            
-                            console.log('✅ Setting results and hiding history');
-                            setResults(record.content);
-                            setShowHistory(false);
-                            
-                            // Also make sure we're in the right step
-                            setCurrentStep('process');
-                            
-                          } catch (error) {
-                            console.error('🚨 Error selecting record:', error);
-                            alert(`Error opening memo: ${error instanceof Error ? error.message : 'Unknown error'}`);
-                          }
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h3 className="text-sm font-medium text-gray-900 mb-1">
-                              {record.title || record.mode || 'Untitled'}
-                            </h3>
-                            <p className="text-xs text-gray-500">
-                              {record.createdAt ? new Date(record.createdAt).toLocaleDateString() : 'No date'}
-                              {record.mode && ` • ${record.mode}`}
-                              {record.content ? ' • Has content' : ' • No content'}
-                            </p>
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h3 className="text-sm font-medium text-gray-900 mb-1">
+                                {record.title || getModeDisplayName(record.mode || '') || (selectedLanguage === 'no' ? 'Uten tittel' : 'Untitled')}
+                              </h3>
+                              <p className="text-xs text-gray-500">
+                                {record.createdAt ? formatDate(record.createdAt) : (selectedLanguage === 'no' ? 'Ingen dato' : 'No date')}
+                                {record.mode && ` • ${getModeDisplayName(record.mode)}`}
+                                {record.content ? 
+                                  ` • ${selectedLanguage === 'no' ? 'Klar til visning' : 'Ready to view'}` : 
+                                  ` • ${selectedLanguage === 'no' ? 'Ingen innhold' : 'No content'}`
+                                }
+                              </p>
+                            </div>
+                            <div className="text-gray-400">→</div>
                           </div>
-                          <div className="text-gray-400">→</div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
             </div>
           ) : (
+            // Show content when authenticated
             <div className="space-y-8">
               {/* Mode Indicator - shows current mode and step */}
               <ModeIndicator
@@ -687,37 +793,51 @@ function App() {
               />
 
               {currentStep === 'mode' && (
-                <BiographyTypeSelector
-                  onTypeSelect={handleTypeSelect}
-                  language={selectedLanguage}
-                  resetKey={resetKey}
-                />
+                <div id="mode-section">
+                  <BiographyTypeSelector
+                    onTypeSelect={handleTypeSelect}
+                    language={selectedLanguage}
+                    resetKey={resetKey}
+                  />
+                </div>
               )}
 
               {currentStep === 'customize' && !results && (
-                <BiographyCustomization
-                  onCustomize={handleCustomization}
-                  selectedType={biographyType}
-                  platform={customization.platform}
-                  language={selectedLanguage}
-                />
+                <div id="customize-section">
+                  <BiographyCustomization
+                    onCustomize={handleCustomization}
+                    selectedType={biographyType}
+                    platform={customization.platform}
+                    language={selectedLanguage}
+                  />
+                </div>
               )}
 
               {(currentStep === 'language' || currentStep === 'record' || currentStep === 'process') && !results && (
-                <StepWizard
-                  currentStep={currentStep}
-                  selectedLanguage={selectedLanguage}
-                  selectedFile={selectedFile}
-                  onLanguageSelect={handleLanguageSelect}
-                  onFileSelect={handleFileSelect}
-                  onProcess={handleProcess}
-                  isProcessing={isProcessing}
-                  mode={biographyType === 'tasks' ? 'tasks' : 'meeting'}
-                />
+                <div id="step-wizard-section">
+                  <StepWizard
+                    currentStep={currentStep}
+                    selectedLanguage={selectedLanguage}
+                    selectedFile={selectedFile}
+                    onLanguageSelect={handleLanguageSelect}
+                    onFileSelect={handleFileSelect}
+                    onProcess={handleProcess}
+                    isProcessing={isProcessing}
+                    mode={biographyType === 'tasks' ? 'tasks' : 'meeting'}
+                  />
+                </div>
+              )}
+
+              {currentStep === 'process' && !results && (
+                <div id="processing-section">
+                  {/* This section is for the process step UI */}
+                </div>
               )}
 
               {isProcessing && (
-                <ProcessingIndicator progress={progress} language={selectedLanguage} />
+                <div id="processing-indicator">
+                  <ProcessingIndicator progress={progress} language={selectedLanguage} />
+                </div>
               )}
 
               {error && (
@@ -727,22 +847,15 @@ function App() {
               )}
 
               {results && !isProcessing && (
-                renderResults()
+                <div id="results-section">
+                  {renderResults()}
+                </div>
               )}
             </div>
           )
         ) : (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Please sign in to continue
-            </h2>
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Sign In
-            </button>
-          </div>
+          // Show blank background when not authenticated - modal will handle auth
+          <div className="min-h-[60vh]"></div>
         )}
       </main>
 
@@ -754,6 +867,7 @@ function App() {
         isOpen={showAuthModal}
         onClose={() => user ? setShowAuthModal(false) : null}
         onAuth={handleAuth}
+        language={selectedLanguage}
       />
     </div>
   );

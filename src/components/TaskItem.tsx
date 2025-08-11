@@ -14,11 +14,35 @@ interface Task {
 interface TaskItemProps {
   task: Task;
   onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
+  language?: string;
 }
 
-export default function TaskItem({ task, onUpdateTask }: TaskItemProps) {
+const getTranslations = (language: string) => {
+  const translations = {
+    en: {
+      addToCalendar: 'Add to Calendar',
+      priority: {
+        High: 'High',
+        Medium: 'Medium',
+        Low: 'Low'
+      }
+    },
+    no: {
+      addToCalendar: 'Legg til i Kalender',
+      priority: {
+        High: 'Høy',
+        Medium: 'Medium',
+        Low: 'Lav'
+      }
+    }
+  };
+  return translations[language as keyof typeof translations] || translations.en;
+};
+
+export default function TaskItem({ task, onUpdateTask, language = 'en' }: TaskItemProps) {
   const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
+  const t = getTranslations(language);
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value;
@@ -134,7 +158,7 @@ export default function TaskItem({ task, onUpdateTask }: TaskItemProps) {
                 'bg-green-100 text-green-800'
               }`}
             >
-              <span>{task.priority}</span>
+              <span>{t.priority[task.priority]}</span>
               <ChevronDown className="w-4 h-4" />
             </button>
 
@@ -146,17 +170,17 @@ export default function TaskItem({ task, onUpdateTask }: TaskItemProps) {
                   exit={{ opacity: 0, y: -10 }}
                   className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg z-10"
                 >
-                  {['High', 'Medium', 'Low'].map((priority) => (
+                  {(['High', 'Medium', 'Low'] as const).map((priority) => (
                     <button
                       key={priority}
-                      onClick={() => handlePriorityChange(priority as Task['priority'])}
+                      onClick={() => handlePriorityChange(priority)}
                       className={`w-full px-4 py-2 text-left hover:bg-gray-50 ${
                         priority === 'High' ? 'text-red-800 hover:bg-red-50' :
                         priority === 'Medium' ? 'text-yellow-800 hover:bg-yellow-50' :
                         'text-green-800 hover:bg-green-50'
                       }`}
                     >
-                      {priority}
+                      {t.priority[priority]}
                     </button>
                   ))}
                 </motion.div>
@@ -189,7 +213,7 @@ export default function TaskItem({ task, onUpdateTask }: TaskItemProps) {
 
         {/* Calendar Integration */}
         <div className="border-t pt-3 mt-3">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Add to Calendar</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">{t.addToCalendar}</h4>
           <div className="flex flex-wrap gap-2">
             <a
               href={createCalendarEvent('google')}

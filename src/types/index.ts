@@ -33,7 +33,7 @@ export interface TranscriptionRecord {
   title: string;
   createdAt: string;
   language: string;
-  mode: 'tasks' | 'biography' | 'content-creator' | 'article' | 'meeting';
+  mode: 'tasks' | 'meeting' | 'content-creator' | 'article' | 'biography'; // biography is legacy
   summary?: string;
   tasks?: Task[];
 }
@@ -101,7 +101,7 @@ export interface DraftTranscription {
   timestamp: string;
 }
 
-export type TranscriptionMode = 'tasks' | 'biography' | 'meeting' | 'content-creator' | 'article';
+export type TranscriptionMode = 'tasks' | 'meeting' | 'content-creator' | 'article';
 
 export interface ErrorMessageProps {
   message: string;
