@@ -12,7 +12,7 @@ interface AuthModalProps {
 const getTranslations = (language: string) => {
   const translations = {
     en: {
-      welcomeBack: 'Welcome Back',
+      welcomeBack: 'Welcome',
       email: 'Email',
       password: 'Password',
       signIn: 'Sign In',
@@ -23,7 +23,7 @@ const getTranslations = (language: string) => {
       signingIn: 'Signing in...'
     },
     no: {
-      welcomeBack: 'Velkommen Tilbake',
+      welcomeBack: 'Velkommen',
       email: 'E-post',
       password: 'Passord',
       signIn: 'Logg Inn',
