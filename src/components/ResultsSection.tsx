@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, ListTodo, Sparkles, Copy, Check, ChevronDown, ChevronUp, Download, Eye, EyeOff, Calendar, Video, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Task } from '../types';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 
 interface ResultsSectionProps {
   results: {
@@ -216,157 +217,133 @@ export default function ResultsSection({ results, onUpdateTask, language }: Resu
     URL.revokeObjectURL(url);
   };
 
-  const downloadAsWord = () => {
-    // Create HTML content with professional Word-compatible formatting
+  const downloadAsWord = async () => {
     const currentDate = new Date().toLocaleDateString(language === 'no' ? 'no-NO' : 'en-US');
     const fileName = `${language === 'no' ? 'sammendrag' : 'summary'}_${new Date().toISOString().split('T')[0]}`;
     
-    let htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>${t.executiveSummary} - ${currentDate}</title>
-    <style>
-        body { 
-            font-family: 'Calibri', 'Arial', sans-serif; 
-            line-height: 1.6; 
-            margin: 40px; 
-            color: #333;
-            background-color: white;
-        }
-        .header { 
-            text-align: center; 
-            margin-bottom: 30px; 
-            border-bottom: 2px solid #0073e6;
-            padding-bottom: 20px;
-        }
-        .title { 
-            font-size: 24px; 
-            font-weight: bold; 
-            color: #0073e6; 
-            margin: 0;
-        }
-        .subtitle { 
-            font-size: 14px; 
-            color: #666; 
-            margin: 5px 0 0 0;
-        }
-        .section { 
-            margin: 30px 0; 
-            page-break-inside: avoid;
-        }
-        .section-title { 
-            font-size: 18px; 
-            font-weight: bold; 
-            color: #0073e6; 
-            margin-bottom: 15px;
-            border-left: 4px solid #0073e6;
-            padding-left: 10px;
-        }
-        .content { 
-            margin-bottom: 20px; 
-            text-align: justify;
-            line-height: 1.8;
-        }
-        .task-item { 
-            margin: 15px 0; 
-            padding: 15px; 
-            border: 1px solid #e0e0e0; 
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        .task-text { 
-            font-weight: bold; 
-            margin-bottom: 8px;
-            font-size: 16px;
-        }
-        .task-details { 
-            font-size: 14px; 
-            color: #666;
-            margin-left: 20px;
-        }
-        .priority-high { color: #d32f2f; font-weight: bold; }
-        .priority-medium { color: #f57c00; font-weight: bold; }
-        .priority-low { color: #388e3c; font-weight: bold; }
-        .transcript { 
-            background-color: #f5f5f5; 
-            padding: 20px; 
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            line-height: 1.6;
-        }
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #ccc;
-            text-align: center;
-            font-size: 12px;
-            color: #888;
-        }
-        @media print {
-            body { margin: 20px; }
-            .section { page-break-inside: avoid; }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1 class="title">${t.executiveSummary}</h1>
-        <p class="subtitle">${language === 'no' ? 'Generert' : 'Generated'} ${currentDate} | MumbleTasks</p>
-    </div>
-    
-    <div class="section">
-        <h2 class="section-title">${t.executiveSummary}</h2>
-        <div class="content">${results.summary.replace(/\n/g, '<br>')}</div>
-    </div>`;
+    // Create all paragraphs for the document
+    const documentChildren = [
+      // Title
+      new Paragraph({
+        text: `${t.executiveSummary}`,
+        heading: HeadingLevel.TITLE,
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `${language === 'no' ? 'Generert' : 'Generated'}: ${currentDate} | MumbleTasks`,
+            bold: true,
+            size: 24,
+          }),
+        ],
+      }),
+      new Paragraph({ text: "" }), // Empty line
+      
+      // Summary section
+      new Paragraph({
+        text: t.executiveSummary,
+        heading: HeadingLevel.HEADING_1,
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: results.summary,
+            size: 24,
+          }),
+        ],
+      }),
+      new Paragraph({ text: "" }), // Empty line
+    ];
 
+    // Add tasks if they exist
     if (results.tasks && results.tasks.length > 0) {
-      htmlContent += `
-    <div class="section">
-        <h2 class="section-title">${t.actionItems}</h2>`;
-      
+      documentChildren.push(
+        new Paragraph({
+          text: t.actionItems,
+          heading: HeadingLevel.HEADING_1,
+        })
+      );
+
       results.tasks.forEach((task, index) => {
-        const priorityClass = `priority-${task.priority.toLowerCase()}`;
-        htmlContent += `
-        <div class="task-item">
-            <div class="task-text">${index + 1}. ${task.text}</div>
-            <div class="task-details">
-                <strong>${language === 'no' ? 'Prioritet' : 'Priority'}:</strong> 
-                <span class="${priorityClass}">${t.priority[task.priority as keyof typeof t.priority]}</span><br>
-                <strong>${language === 'no' ? 'Forfallsdato' : 'Due Date'}:</strong> 
-                ${task.dueDate}${task.dueTime ? ` ${language === 'no' ? 'klokka' : 'at'} ${task.dueTime}` : ''}
-            </div>
-        </div>`;
+        documentChildren.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${index + 1}. ${task.text}`,
+                bold: true,
+                size: 24,
+              }),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `   ${language === 'no' ? 'Prioritet' : 'Priority'}: ${t.priority[task.priority as keyof typeof t.priority]}`,
+                size: 22,
+              }),
+            ],
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `   ${language === 'no' ? 'Forfallsdato' : 'Due Date'}: ${task.dueDate}${task.dueTime ? ` ${language === 'no' ? 'klokka' : 'at'} ${task.dueTime}` : ''}`,
+                size: 22,
+              }),
+            ],
+          }),
+          new Paragraph({ text: "" }) // Empty line after each task
+        );
       });
-      
-      htmlContent += `
-    </div>`;
     }
 
-    htmlContent += `
-    <div class="section">
-        <h2 class="section-title">${t.fullTranscript}</h2>
-        <p><em>${t.transcriptNote}</em></p>
-        <div class="transcript">${results.transcription}</div>
-    </div>
-    
-    <div class="footer">
-        <p>${language === 'no' ? 'Dokumentet ble generert av' : 'Document generated by'} MumbleTasks © ${new Date().getFullYear()}</p>
-    </div>
-</body>
-</html>`;
+    // Add transcript section
+    documentChildren.push(
+      new Paragraph({ text: "" }), // Empty line
+      new Paragraph({
+        text: t.fullTranscript,
+        heading: HeadingLevel.HEADING_1,
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: `(${t.transcriptNote})`,
+            italics: true,
+            size: 22,
+          }),
+        ],
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: results.transcription,
+            size: 24,
+          }),
+        ],
+      })
+    );
 
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${fileName}.docx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: documentChildren,
+        },
+      ],
+    });
+
+    try {
+      const blob = await Packer.toBlob(doc);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${fileName}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating DOCX:', error);
+    }
   };
 
   const downloadAsPDF = async () => {
