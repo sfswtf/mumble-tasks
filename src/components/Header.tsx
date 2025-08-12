@@ -130,11 +130,16 @@ const Header: React.FC<HeaderProps> = ({
                 />
               </div>
               
-              {/* Brand Text - Always visible for professional look */}
+              {/* Brand Text */}
               <div className="flex flex-col">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-800 leading-tight tracking-tight">
-                  MumbleTasks
-                </h1>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 tracking-tight">
+                    MumbleTasks
+                  </span>
+                  <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-medium">
+                    v1.0
+                  </span>
+                </div>
                 <p className="text-xs sm:text-sm text-gray-500 font-medium -mt-0.5 hidden sm:block">
                   {language === 'no' ? 'Hva snakker du om?' : 'What are you talking about?'}
                 </p>
