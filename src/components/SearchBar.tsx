@@ -49,7 +49,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <div ref={searchRef} className="relative w-full max-w-md">
+    <div ref={searchRef} className="relative w-full">
       <div className="relative">
         <input
           type="text"
@@ -57,15 +57,15 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           onChange={handleInputChange}
           onFocus={() => setIsFocused(true)}
           placeholder={placeholder}
-          className="w-full px-4 py-2 pl-10 pr-10 text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 sm:px-4 py-3 sm:py-2 pl-9 sm:pl-10 pr-9 sm:pr-10 text-base text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent touch-manipulation"
         />
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
         {query && (
           <button
             onClick={clearSearch}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 touch-manipulation"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         )}
       </div>
@@ -87,15 +87,15 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                     onSelect(result);
                     setIsFocused(false);
                   }}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                  className="w-full px-3 sm:px-4 py-3 sm:py-2 text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50 touch-manipulation"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-900">{result.title}</span>
-                    <span className="text-sm text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <span className="font-medium text-gray-900 text-sm sm:text-base">{result.title}</span>
+                    <span className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-0">
                       {new Date(result.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-500">{result.type}</div>
+                  <div className="text-xs sm:text-sm text-gray-500 mt-1">{result.type}</div>
                 </button>
               ))}
             </div>

@@ -81,22 +81,22 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-white rounded-lg p-6 w-full max-w-md relative shadow-2xl"
+            className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-sm sm:max-w-md relative shadow-2xl"
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-700 z-10 p-1 touch-manipulation"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <h2 className="text-2xl font-bold text-center mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 pr-8">
               {t.welcomeBack}
             </h2>
 
@@ -118,12 +118,12 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
                   {t.email}
                 </label>
                 <div className="relative">
-                  <Mail className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-9 sm:pl-10 w-full p-3 sm:p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
                     placeholder={t.emailPlaceholder}
                     required
                   />
@@ -135,12 +135,12 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
                   {t.password}
                 </label>
                 <div className="relative">
-                  <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-9 sm:pl-10 w-full p-3 sm:p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
                     placeholder={t.passwordPlaceholder}
                     required
                   />
@@ -150,7 +150,7 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-blue-500 text-white py-3 sm:py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation font-medium"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center space-x-2">
@@ -163,13 +163,13 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
               </button>
             </form>
 
-            <div className="mt-6 text-center">
+            <div className="mt-4 sm:mt-6 text-center">
               <p className="text-sm text-gray-600 mb-3">
                 {t.dontHaveAccount}
               </p>
               <button
                 onClick={handleRequestAccess}
-                className="px-4 py-2 text-green-600 hover:text-green-700 font-medium hover:bg-green-50 rounded-lg transition-colors border border-green-200 hover:border-green-300"
+                className="px-4 py-2.5 sm:py-2 text-green-600 hover:text-green-700 font-medium hover:bg-green-50 rounded-lg transition-colors border border-green-200 hover:border-green-300 touch-manipulation"
               >
                 {t.requestAccess}
               </button>

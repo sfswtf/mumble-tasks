@@ -603,7 +603,7 @@ function App() {
         onNavigateHome={handleNewTranscription}
       />
       
-      <main className="container mx-auto px-4 py-8 max-w-5xl min-h-screen">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl min-h-screen">
         {/* TEMPORARY: Testing mode indicator */}
         {/* <div className="mb-4 p-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
           🧪 <strong>Testing Mode:</strong> Authentication bypassed - API testing in progress
@@ -625,17 +625,19 @@ function App() {
         {/* TEMPORARY: Hide search and history for testing */}
         {user && (
           <div className="flex flex-col space-y-4 mb-8">
-            <div className="flex justify-between items-center">
-              <SearchBar
-                onSearch={handleSearch}
-                results={searchResults}
-                onSelect={handleSearchSelect}
-                placeholder={translations.searchPlaceholder}
-              />
-              <div className="flex space-x-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+              <div className="w-full sm:w-auto sm:flex-1 sm:max-w-md">
+                <SearchBar
+                  onSearch={handleSearch}
+                  results={searchResults}
+                  onSelect={handleSearchSelect}
+                  placeholder={translations.searchPlaceholder}
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 sm:ml-4">
                 <button
                   onClick={handleNewTranscription}
-                  className="px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2.5 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 touch-manipulation text-center"
                 >
                   {translations.newMemo}
                 </button>
@@ -649,7 +651,7 @@ function App() {
                       alert('Error loading history. Check console for details.');
                     }
                   }}
-                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 touch-manipulation text-center"
                 >
                   {showHistory ? translations.hideHistory : translations.viewHistory}
                 </button>
