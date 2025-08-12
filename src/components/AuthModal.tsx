@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, AlertCircle } from 'lucide-react';
+import { X, Mail, Lock, AlertCircle, Globe, Check } from 'lucide-react';
+import { SUPPORTED_LANGUAGES } from '../utils/languages';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -34,15 +35,18 @@ const getTranslations = (language: string) => {
       signingIn: 'Logger inn...'
     }
   };
-  return translations[language as keyof typeof translations] || translations.en;
+  return translations[language as keyof typeof translations] || translations.no;
 };
 
-export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, onAuth, language }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const t = getTranslations(language);
+  const [selectedLanguage, setSelectedLanguage] = useState(language || 'no');
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  
+  const t = getTranslations(selectedLanguage);
 
   const clearForm = () => {
     setEmail('');
@@ -65,13 +69,18 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
   };
 
   const handleRequestAccess = () => {
-    const subject = language === 'no' ? 'Forespørsel om tilgang til MumbleTasks' : 'Request access to MumbleTasks';
-    const body = language === 'no' 
+    const subject = selectedLanguage === 'no' ? 'Forespørsel om tilgang til MumbleTasks' : 'Request access to MumbleTasks';
+    const body = selectedLanguage === 'no' 
       ? 'Hei,\n\nJeg ønsker tilgang til MumbleTasks. Kan dere hjelpe meg med å opprette en konto?\n\nTakk!'
       : 'Hello,\n\nI would like to request access to MumbleTasks. Can you help me create an account?\n\nThank you!';
     
     const mailtoLink = `mailto:support@mumbletasks.no?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoLink, '_blank');
+  };
+
+  const handleLanguageSelect = (languageCode: string) => {
+    setSelectedLanguage(languageCode);
+    setShowLanguageDropdown(false);
   };
 
   return (
@@ -89,14 +98,59 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
             exit={{ scale: 0.9, opacity: 0 }}
             className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-sm sm:max-w-md relative shadow-2xl"
           >
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-700 z-10 p-1 touch-manipulation"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            {/* Header with Close button and Language selector */}
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <div className="relative">
+                <button
+                  onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                  className="inline-flex items-center justify-center space-x-2 px-3 py-1.5 bg-gray-50 rounded-lg hover:bg-gray-100 border border-gray-200 transition-colors"
+                >
+                  <span className="text-lg">
+                    {SUPPORTED_LANGUAGES.find(lang => lang.code === selectedLanguage)?.flag}
+                  </span>
+                  <span className="text-xs text-gray-700">
+                    {SUPPORTED_LANGUAGES.find(lang => lang.code === selectedLanguage)?.name}
+                  </span>
+                  <Globe className="w-3 h-3 text-gray-500" />
+                </button>
 
-            <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 pr-8">
+                <AnimatePresence>
+                  {showLanguageDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+                    >
+                      <div className="py-1">
+                        {SUPPORTED_LANGUAGES.map((language) => (
+                          <button
+                            key={language.code}
+                            onClick={() => handleLanguageSelect(language.code)}
+                            className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center space-x-3 text-sm"
+                          >
+                            <span className="text-base">{language.flag}</span>
+                            <span className="flex-1">{language.name}</span>
+                            {selectedLanguage === language.code && (
+                              <Check className="w-3 h-3 text-green-500" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700 z-10 p-1 touch-manipulation"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">
               {t.welcomeBack}
             </h2>
 
