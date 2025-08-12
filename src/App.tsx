@@ -860,7 +860,7 @@ function App() {
       </main>
 
       <footer className="text-center py-4 text-sm text-gray-600">
-        © {new Date().getFullYear()} SFS Solutions. All rights reserved.
+        © {new Date().getFullYear()} Sebastian Saethre. All rights reserved.
       </footer>
 
       <AuthModal

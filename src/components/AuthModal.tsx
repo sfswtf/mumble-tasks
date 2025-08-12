@@ -13,37 +13,25 @@ const getTranslations = (language: string) => {
   const translations = {
     en: {
       welcomeBack: 'Welcome Back',
-      createAccount: 'Create Account',
       email: 'Email',
       password: 'Password',
-      confirmPassword: 'Confirm Password',
       signIn: 'Sign In',
-      signUp: 'Sign Up',
       emailPlaceholder: 'your@email.com',
       passwordPlaceholder: '••••••••',
-      confirmPasswordPlaceholder: '••••••••',
       dontHaveAccount: "Don't have an account?",
-      alreadyHaveAccount: 'Already have an account?',
-      passwordsDontMatch: 'Passwords do not match',
-      signingIn: 'Signing in...',
-      creatingAccount: 'Creating account...'
+      requestAccess: 'Request Access',
+      signingIn: 'Signing in...'
     },
     no: {
       welcomeBack: 'Velkommen Tilbake',
-      createAccount: 'Opprett Konto',
       email: 'E-post',
       password: 'Passord',
-      confirmPassword: 'Bekreft Passord',
       signIn: 'Logg Inn',
-      signUp: 'Registrer Deg',
       emailPlaceholder: 'din@epost.no',
       passwordPlaceholder: '••••••••',
-      confirmPasswordPlaceholder: '••••••••',
       dontHaveAccount: 'Har du ikke en konto?',
-      alreadyHaveAccount: 'Har du allerede en konto?',
-      passwordsDontMatch: 'Passordene stemmer ikke overens',
-      signingIn: 'Logger inn...',
-      creatingAccount: 'Oppretter konto...'
+      requestAccess: 'Be om Tilgang',
+      signingIn: 'Logger inn...'
     }
   };
   return translations[language as keyof typeof translations] || translations.en;
@@ -52,8 +40,6 @@ const getTranslations = (language: string) => {
 export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const t = getTranslations(language);
@@ -61,34 +47,31 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
   const clearForm = () => {
     setEmail('');
     setPassword('');
-    setConfirmPassword('');
     setError(null);
-  };
-
-  const toggleMode = () => {
-    setIsSignUp(!isSignUp);
-    clearForm();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Validate passwords match for sign up
-    if (isSignUp && password !== confirmPassword) {
-      setError(t.passwordsDontMatch);
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      await onAuth(email, password, isSignUp);
+      await onAuth(email, password, false); // Always false since we're removing sign up
     } catch (error: any) {
-      setError(error.message || (isSignUp ? 'Failed to create account' : 'Failed to sign in'));
+      setError(error.message || 'Failed to sign in');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRequestAccess = () => {
+    const subject = language === 'no' ? 'Forespørsel om tilgang til MumbleTasks' : 'Request access to MumbleTasks';
+    const body = language === 'no' 
+      ? 'Hei,\n\nJeg ønsker tilgang til MumbleTasks. Kan dere hjelpe meg med å opprette en konto?\n\nTakk!'
+      : 'Hello,\n\nI would like to request access to MumbleTasks. Can you help me create an account?\n\nThank you!';
+    
+    const mailtoLink = `mailto:support@mumbletasks.no?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoLink, '_blank');
   };
 
   return (
@@ -114,7 +97,7 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
             </button>
 
             <h2 className="text-2xl font-bold text-center mb-6">
-              {isSignUp ? t.createAccount : t.welcomeBack}
+              {t.welcomeBack}
             </h2>
 
             {/* Error Message Inside Modal */}
@@ -164,31 +147,6 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
                 </div>
               </div>
 
-              {/* Confirm Password Field - Only for Sign Up */}
-              {isSignUp && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-2"
-                >
-                  <label className="block text-sm font-medium text-gray-700">
-                    {t.confirmPassword}
-                  </label>
-                  <div className="relative">
-                    <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="pl-10 w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder={t.confirmPasswordPlaceholder}
-                      required
-                    />
-                  </div>
-                </motion.div>
-              )}
-
               <button
                 type="submit"
                 disabled={isLoading}
@@ -197,23 +155,23 @@ export default function AuthModal({ isOpen, onClose, onAuth, language = 'en' }: 
                 {isLoading ? (
                   <div className="flex items-center justify-center space-x-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>{isSignUp ? t.creatingAccount : t.signingIn}</span>
+                    <span>{t.signingIn}</span>
                   </div>
                 ) : (
-                  isSignUp ? t.signUp : t.signIn
+                  t.signIn
                 )}
               </button>
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                {isSignUp ? t.alreadyHaveAccount : t.dontHaveAccount}
+              <p className="text-sm text-gray-600 mb-3">
+                {t.dontHaveAccount}
               </p>
               <button
-                onClick={toggleMode}
-                className="mt-2 px-4 py-2 text-blue-500 hover:text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition-colors"
+                onClick={handleRequestAccess}
+                className="px-4 py-2 text-green-600 hover:text-green-700 font-medium hover:bg-green-50 rounded-lg transition-colors border border-green-200 hover:border-green-300"
               >
-                {isSignUp ? t.signIn : t.signUp}
+                {t.requestAccess}
               </button>
             </div>
           </motion.div>
