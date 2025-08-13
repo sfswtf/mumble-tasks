@@ -308,7 +308,7 @@ function App() {
         };
 
         setResults(result);
-        saveTranscription({
+        const savedRecord = await saveTranscription({
           id: result.id,
           userId: user.id,
           transcription,
@@ -317,7 +317,7 @@ function App() {
           title: result.title,
           createdAt: result.createdAt,
           language: selectedLanguage,
-          mode: biographyType === 'tasks' ? 'tasks' : 'biography',
+          mode: biographyType,
           summary: summary,
           tasks: result.tasks
         });
@@ -366,7 +366,7 @@ function App() {
           enhancedTitle = `${platformName} - ${result.title}`;
         }
         
-        saveTranscription({
+        const savedRecord = await saveTranscription({
           id: result.id,
           userId: user.id,
           transcription,
@@ -406,7 +406,7 @@ function App() {
         };
 
         setResults(result);
-        saveTranscription({
+        const savedRecord = await saveTranscription({
           id: result.id,
           userId: user.id,
           transcription,
@@ -659,24 +659,7 @@ function App() {
                 </button>
                 <button
                   onClick={() => {
-                    try {
-                      console.log('🔍 History button clicked');
-                      console.log('📊 Current state:', {
-                        showHistory,
-                        transcriptionsCount: transcriptions.length,
-                        user: user?.id,
-                        transcriptionsSample: transcriptions[0] ? {
-                          id: transcriptions[0].id,
-                          title: transcriptions[0].title,
-                          mode: transcriptions[0].mode
-                        } : 'No transcriptions'
-                      });
-                      console.log('🔄 Toggling history from', showHistory, 'to', !showHistory);
-                      setShowHistory(!showHistory);
-                    } catch (error) {
-                      console.error('🚨 Error toggling history:', error);
-                      alert('Error loading history. Check console for details.');
-                    }
+                    setShowHistory(!showHistory);
                   }}
                   className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 touch-manipulation text-center"
                 >
@@ -712,10 +695,7 @@ function App() {
                 ) : (
                   <div className="space-y-4">
                     {transcriptions.map((record, index) => {
-                      console.log(`Processing record ${index + 1}:`, record?.title, record?.mode);
-                      
                       if (!record) {
-                        console.warn('Invalid record at index', index);
                         return null;
                       }
 
@@ -725,14 +705,12 @@ function App() {
                           'tasks': 'Oppgaveliste',
                           'meeting': 'Møtenotater', 
                           'article': 'Artikkel',
-                          'content-creator': 'Innholdsproduksjon',
-                          'biography': 'Biografi'
+                          'content-creator': 'Innholdsproduksjon'
                         } : {
                           'tasks': 'Task List',
                           'meeting': 'Meeting Notes', 
                           'article': 'Article',
-                          'content-creator': 'Content Creation',
-                          'biography': 'Biography'
+                          'content-creator': 'Content Creation'
                         };
                         return modeNames[mode as keyof typeof modeNames] || mode || 'Unknown';
                       };
@@ -768,29 +746,21 @@ function App() {
                           key={record.id || `record-${index}`}
                           className="group bg-gray-50 rounded-lg p-4 hover:shadow-md hover:bg-gray-100 transition-all cursor-pointer"
                           onClick={() => {
-                            try {
-                              console.log('Clicked record:', record.id, record.title);
-                              
-                              if (!record.content) {
-                                alert(selectedLanguage === 'no' 
-                                  ? 'Dette notatet har ikke noe innhold å vise' 
-                                  : 'This memo has no content to display'
-                                );
-                                return;
-                              }
-                              
-                              setResults(record.content);
-                              setShowHistory(false);
-                              
-                              if (record.mode) {
-                                setBiographyType(record.mode as TranscriptionMode);
-                              }
-                              setCurrentStep('process');
-                              
-                            } catch (error) {
-                              console.error('Error selecting record:', error);
-                              alert('Error opening memo');
+                            if (!record.content) {
+                              alert(selectedLanguage === 'no' 
+                                ? 'Dette notatet har ikke noe innhold å vise' 
+                                : 'This memo has no content to display'
+                              );
+                              return;
                             }
+                            
+                            setResults(record.content);
+                            setShowHistory(false);
+                            
+                            if (record.mode) {
+                              setBiographyType(record.mode as TranscriptionMode);
+                            }
+                            setCurrentStep('process');
                           }}
                         >
                           <div className="flex items-center justify-between">

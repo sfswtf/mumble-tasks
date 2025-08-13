@@ -71,12 +71,13 @@ const UploadSection: React.FC<UploadSectionProps> = ({
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div
-        className={`border-2 border-dashed rounded-lg p-8 text-center ${
+        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
           isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
       >
         <input
           type="file"
@@ -110,13 +111,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({
             </p>
             <p className="mt-1 text-sm text-gray-500">
               {t.dragDrop}{' '}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="text-blue-600 hover:text-blue-500"
-              >
+              <span className="text-blue-600 hover:text-blue-500">
                 {t.browse}
-              </button>
+              </span>
             </p>
           </div>
         </div>

@@ -1023,10 +1023,45 @@ Create a well-researched, engaging article that thoroughly explores the topic di
     // Report completion
     onProgress?.(1);
 
+    // Post-process content to remove generic markers and clean formatting
+    const cleanContent = (content: string): string => {
+      return content
+        // Remove example markers and placeholder text
+        .replace(/\*\*example\*\*/gi, '')
+        .replace(/\*\*Example\*\*/gi, '')
+        .replace(/\*\*EXAMPLE\*\*/gi, '')
+        .replace(/\[example\]/gi, '')
+        .replace(/\[Example\]/gi, '')
+        .replace(/\[EXAMPLE\]/gi, '')
+        .replace(/\(example\)/gi, '')
+        .replace(/\(Example\)/gi, '')
+        .replace(/\(EXAMPLE\)/gi, '')
+        // Remove generic placeholders
+        .replace(/\[insert.*?\]/gi, '')
+        .replace(/\[add.*?\]/gi, '')
+        .replace(/\[include.*?\]/gi, '')
+        .replace(/\[your.*?\]/gi, '')
+        .replace(/\[company.*?\]/gi, '')
+        .replace(/\[brand.*?\]/gi, '')
+        // Clean up excessive asterisks and formatting
+        .replace(/\*\*\*+/g, '**')
+        .replace(/\*\*\s*\*\*/g, '')
+        // Remove placeholder text patterns
+        .replace(/This is just an example.*?\./gi, '')
+        .replace(/Note: This is.*?\./gi, '')
+        .replace(/Disclaimer:.*?\./gi, '')
+        // Clean up extra whitespace
+        .replace(/\n\s*\n\s*\n/g, '\n\n')
+        .replace(/^\s+|\s+$/g, '')
+        .trim();
+    };
+
+    const processedContent = cleanContent(content);
+
     return {
-      content,
+      content: processedContent,
       type,
-      language: language
+      language
     };
   } catch (error) {
     console.error('Content generation error:', error);
