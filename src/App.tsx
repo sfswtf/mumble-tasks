@@ -712,200 +712,106 @@ function App() {
                 ) : (
                   <div className="space-y-4">
                     {transcriptions.map((record, index) => {
-                      // Log for debugging
-                      if (index === 0) {
-                        console.log('🔍 About to render', transcriptions.length, 'transcriptions');
-                      }
-                      console.log(`🔄 Processing record ${index + 1}:`, record);
+                      console.log(`Processing record ${index + 1}:`, record?.title, record?.mode);
                       
-                      // Add safety checks but don't filter out records
                       if (!record) {
-                        console.warn('❌ Invalid record at index', index);
-                        return (
-                          <div key={`invalid-${index}`} className="bg-red-50 p-4 rounded">
-                            <p>Invalid record at position {index + 1}</p>
-                          </div>
-                        );
+                        console.warn('Invalid record at index', index);
+                        return null;
                       }
 
-                      try {
-                        // Helper function to get display name for mode
-                        const getModeDisplayName = (mode: string) => {
-                          const modeNames = selectedLanguage === 'no' ? {
-                            'tasks': 'Oppgaveliste',
-                            'meeting': 'Møtenotater', 
-                            'article': 'Artikkel',
-                            'content-creator': 'Innholdsproduksjon',
-                            'biography': 'Biografi',
-                            // Add fallback for unknown modes
-                            'unknown': 'Ukjent type'
-                          } : {
-                            'tasks': 'Task List',
-                            'meeting': 'Meeting Notes', 
-                            'article': 'Article',
-                            'content-creator': 'Content Creation',
-                            'biography': 'Biography',
-                            'unknown': 'Unknown type'
-                          };
-                          return modeNames[mode as keyof typeof modeNames] || mode || 'Unknown';
+                      // Helper functions
+                      const getModeDisplayName = (mode: string) => {
+                        const modeNames = selectedLanguage === 'no' ? {
+                          'tasks': 'Oppgaveliste',
+                          'meeting': 'Møtenotater', 
+                          'article': 'Artikkel',
+                          'content-creator': 'Innholdsproduksjon',
+                          'biography': 'Biografi'
+                        } : {
+                          'tasks': 'Task List',
+                          'meeting': 'Meeting Notes', 
+                          'article': 'Article',
+                          'content-creator': 'Content Creation',
+                          'biography': 'Biography'
                         };
+                        return modeNames[mode as keyof typeof modeNames] || mode || 'Unknown';
+                      };
 
-                        // Get platform info if it's a content-creator type
-                        const getPlatformInfo = (record: TranscriptionRecord): string => {
-                          try {
-                            if (record.mode === 'content-creator') {
-                              // Check if there's platform info in the content or title
-                              const platformMap = {
-                                'short-videos': 'Short Videos',
-                                'youtube-videos': 'YouTube',
-                                'linkedin-posts': 'LinkedIn',
-                                'facebook-posts': 'Facebook', 
-                                'twitter-threads': 'Twitter',
-                                'blog-posts': 'Blog'
-                              };
-                              
-                              // Try to extract platform from title
-                              if (record.title) {
-                                for (const [key, value] of Object.entries(platformMap)) {
-                                  if (record.title.toLowerCase().includes(key.toLowerCase()) || 
-                                      record.title.toLowerCase().includes(value.toLowerCase())) {
-                                    return ` (${value})`;
-                                  }
-                                }
-                              }
-                            }
-                          } catch (error) {
-                            console.error('Error getting platform info:', error);
-                          }
-                          return '';
-                        };
-
-                        // Format date properly
-                        const formatDate = (dateString: string) => {
-                          if (!dateString) return selectedLanguage === 'no' ? 'Ingen dato' : 'No date';
-                          
-                          try {
-                            const date = new Date(dateString);
-                            if (isNaN(date.getTime())) {
-                              return selectedLanguage === 'no' ? 'Ugyldig dato' : 'Invalid date';
-                            }
-                            return date.toLocaleDateString(selectedLanguage === 'no' ? 'no-NO' : 'en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            });
-                          } catch (error) {
-                            console.error('Error formatting date:', error);
-                            return selectedLanguage === 'no' ? 'Ugyldig dato' : 'Invalid date';
-                          }
-                        };
-
-                        // Get a meaningful title
-                        const getDisplayTitle = (record: TranscriptionRecord): string => {
-                          try {
-                            if (record.title && record.title !== 'Untitled') {
-                              return record.title;
-                            }
-                            
-                            // Fallback to mode-based title
-                            const modeDisplayName = getModeDisplayName(record.mode || 'unknown');
-                            const platformInfo = getPlatformInfo(record);
-                            const date = formatDate(record.createdAt);
-                            
-                            return `${modeDisplayName}${platformInfo} - ${date}`;
-                          } catch (error) {
-                            console.error('Error getting display title:', error);
-                            return `Record ${index + 1}`;
-                          }
-                        };
-
-                        // Log successful processing
-                        if (index < 5) { // Only log first 5 to avoid spam
-                          console.log(`✅ Successfully processed record ${index + 1}`, {
-                            title: getDisplayTitle(record),
-                            mode: record.mode,
-                            hasContent: !!record.content
+                      const formatDate = (dateString: string) => {
+                        if (!dateString) return selectedLanguage === 'no' ? 'Ingen dato' : 'No date';
+                        
+                        try {
+                          const date = new Date(dateString);
+                          return date.toLocaleDateString(selectedLanguage === 'no' ? 'no-NO' : 'en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
                           });
+                        } catch (error) {
+                          return 'Invalid date';
                         }
+                      };
 
-                        return (
-                          <div
-                            key={record.id || `record-${index}`}
-                            className="group bg-gray-50 rounded-lg p-4 hover:shadow-md hover:bg-gray-100 transition-all cursor-pointer"
-                            onClick={() => {
-                              try {
-                                console.log('🔍 Clicked record:', {
-                                  id: record.id,
-                                  title: record.title,
-                                  mode: record.mode,
-                                  hasContent: !!record.content,
-                                  contentType: typeof record.content,
-                                  contentKeys: record.content ? Object.keys(record.content) : 'none'
-                                });
-                                
-                                if (!record.content) {
-                                  console.warn('⚠️ Record has no content, cannot display');
-                                  alert(selectedLanguage === 'no' 
-                                    ? 'Dette notatet har ikke noe innhold å vise' 
-                                    : 'This memo has no content to display'
-                                  );
-                                  return;
-                                }
-                                
-                                console.log('✅ Setting results and hiding history');
-                                setResults(record.content);
-                                setShowHistory(false);
-                                
-                                // Set the mode and step based on what was loaded
-                                if (record.mode) {
-                                  setBiographyType(record.mode as TranscriptionMode);
-                                }
-                                setCurrentStep('process');
-                                
-                              } catch (error) {
-                                console.error('🚨 Error selecting record:', error);
-                                alert(`${selectedLanguage === 'no' ? 'Feil ved åpning av notat' : 'Error opening memo'}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                      const getTitle = (record: TranscriptionRecord): string => {
+                        if (record.title && record.title !== 'Untitled') {
+                          return record.title;
+                        }
+                        const mode = getModeDisplayName(record.mode || 'unknown');
+                        const date = formatDate(record.createdAt);
+                        return `${mode} - ${date}`;
+                      };
+
+                      return (
+                        <div
+                          key={record.id || `record-${index}`}
+                          className="group bg-gray-50 rounded-lg p-4 hover:shadow-md hover:bg-gray-100 transition-all cursor-pointer"
+                          onClick={() => {
+                            try {
+                              console.log('Clicked record:', record.id, record.title);
+                              
+                              if (!record.content) {
+                                alert(selectedLanguage === 'no' 
+                                  ? 'Dette notatet har ikke noe innhold å vise' 
+                                  : 'This memo has no content to display'
+                                );
+                                return;
                               }
-                            }}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <h3 className="text-sm font-medium text-gray-900 mb-1">
-                                  {getDisplayTitle(record)}
-                                </h3>
-                                <p className="text-xs text-gray-500">
-                                  {formatDate(record.createdAt)}
-                                  {record.mode && ` • ${getModeDisplayName(record.mode)}${getPlatformInfo(record)}`}
-                                  {record.content ? 
-                                    ` • ${selectedLanguage === 'no' ? 'Klar til visning' : 'Ready to view'}` : 
-                                    ` • ${selectedLanguage === 'no' ? 'Ingen innhold' : 'No content'}`
-                                  }
-                                  {record.summary && ` • ${record.summary.slice(0, 50)}${record.summary.length > 50 ? '...' : ''}`}
-                                </p>
-                              </div>
-                              <div className="text-gray-400">→</div>
+                              
+                              setResults(record.content);
+                              setShowHistory(false);
+                              
+                              if (record.mode) {
+                                setBiographyType(record.mode as TranscriptionMode);
+                              }
+                              setCurrentStep('process');
+                              
+                            } catch (error) {
+                              console.error('Error selecting record:', error);
+                              alert('Error opening memo');
+                            }
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h3 className="text-sm font-medium text-gray-900 mb-1">
+                                {getTitle(record)}
+                              </h3>
+                              <p className="text-xs text-gray-500">
+                                {formatDate(record.createdAt)}
+                                {record.mode && ` • ${getModeDisplayName(record.mode)}`}
+                                {record.content ? 
+                                  ` • ${selectedLanguage === 'no' ? 'Klar til visning' : 'Ready to view'}` : 
+                                  ` • ${selectedLanguage === 'no' ? 'Ingen innhold' : 'No content'}`
+                                }
+                              </p>
                             </div>
+                            <div className="text-gray-400">→</div>
                           </div>
-                        );
-                      } catch (error) {
-                        console.error(`❌ Error rendering record ${index + 1}:`, error);
-                        return (
-                          <div key={`error-${index}`} className="bg-yellow-50 p-4 rounded border-l-4 border-yellow-400">
-                            <p className="text-sm">
-                              <strong>Error rendering record {index + 1}:</strong> {error instanceof Error ? error.message : 'Unknown error'}
-                            </p>
-                            <details className="mt-2">
-                              <summary className="cursor-pointer text-xs text-gray-600">Show record data</summary>
-                              <pre className="text-xs mt-1 bg-gray-100 p-2 rounded overflow-auto">
-                                {JSON.stringify(record, null, 2)}
-                              </pre>
-                            </details>
-                          </div>
-                        );
-                      }
-                    })}
+                        </div>
+                      );
+                    }).filter(Boolean)}
                   </div>
                 )}
               </div>
