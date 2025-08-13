@@ -44,8 +44,7 @@ const getTranslations = (language: string) => {
         },
         'content-creator': {
           title: 'Content Creator',
-          description: 'Transform your voice into engaging content for 6+ social platforms: TikTok, YouTube, LinkedIn, Facebook, Twitter, and blogs',
-          badge: 'Most Popular'
+          description: 'Transform your voice into engaging content for 6+ social platforms: TikTok, YouTube, LinkedIn, Facebook, Twitter, and blogs'
         },
         article: {
           title: 'Article',
@@ -102,8 +101,7 @@ const getTranslations = (language: string) => {
         },
         'content-creator': {
           title: 'Innholdsproduksjon',
-          description: 'Gjør stemmen din om til engasjerende innhold for 6+ plattformer: TikTok, YouTube, LinkedIn, Facebook, Twitter og blogger',
-          badge: 'Mest Populær'
+          description: 'Gjør stemmen din om til engasjerende innhold for 6+ plattformer: TikTok, YouTube, LinkedIn, Facebook, Twitter og blogger'
         },
         article: {
           title: 'Artikkel',
@@ -383,9 +381,6 @@ export default function BiographyTypeSelector({ onTypeSelect, language, resetKey
               onClick={() => handleModeSelect(type)}
               className="w-full bg-gradient-to-br from-white to-red-50 rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-red-500 relative"
             >
-              <div className="absolute top-4 right-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium">
-                {t.types[type].badge}
-              </div>
               
               <div className="flex items-start space-x-6">
                 <div className="p-4 rounded-lg bg-red-100 flex-shrink-0">
