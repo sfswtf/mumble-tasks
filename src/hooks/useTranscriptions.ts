@@ -26,19 +26,58 @@ export function useTranscriptions(userId: string | null) {
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
-        console.log('📊 Query result:', { data, error, count: data?.length });
+        console.log('📊 Raw query result:', { 
+          dataCount: data?.length, 
+          error, 
+          sampleRecord: data?.[0] ? {
+            id: data[0].id,
+            title: data[0].title,
+            mode: data[0].mode,
+            created_at: data[0].created_at,
+            hasContent: !!data[0].content
+          } : 'No records'
+        });
 
         if (error) {
           console.error('❌ Error loading transcriptions:', error);
           setTranscriptions([]);
         } else {
-          console.log('✅ Loaded transcriptions:', data?.length || 0);
-          setTranscriptions(data || []);
+          console.log('✅ Raw data from DB:', data);
+          
+          // Transform database records to match our TypeScript interface
+          const transformedRecords: TranscriptionRecord[] = (data || []).map((record, index) => {
+            console.log(`🔄 Transforming record ${index + 1}:`, {
+              id: record.id,
+              title: record.title,
+              mode: record.mode,
+              created_at: record.created_at,
+              user_id: record.user_id
+            });
+            
+            return {
+              id: record.id,
+              userId: record.user_id,
+              transcription: record.transcription || '',
+              type: record.mode || record.type || 'tasks', // Handle both old and new field names
+              content: record.content,
+              title: record.title || 'Untitled',
+              createdAt: record.created_at,
+              language: record.language || 'en',
+              mode: record.mode || record.type || 'tasks',
+              summary: record.summary,
+              tasks: record.tasks
+            };
+          });
+          
+          console.log('✅ Final transformed records:', transformedRecords.length, 'records');
+          console.log('📋 Sample transformed record:', transformedRecords[0]);
+          setTranscriptions(transformedRecords);
         }
       } catch (error) {
         console.error('❌ Exception loading transcriptions:', error);
         setTranscriptions([]);
       } finally {
+        console.log('🏁 Finished loading transcriptions, setting loading to false');
         setLoading(false);
       }
     };
@@ -50,6 +89,8 @@ export function useTranscriptions(userId: string | null) {
     if (!userId) return;
 
     try {
+      console.log('💾 Saving transcription:', transcription);
+      
       const { data, error } = await supabase
         .from('transcriptions')
         .insert([{
@@ -60,7 +101,7 @@ export function useTranscriptions(userId: string | null) {
           tasks: transcription.tasks,
           mode: transcription.mode,
           language: transcription.language,
-          content: transcription.content  // ADD THE MISSING CONTENT FIELD!
+          content: transcription.content
         }])
         .select()
         .single();
@@ -70,9 +111,26 @@ export function useTranscriptions(userId: string | null) {
         throw new Error('Failed to save transcription');
       }
 
+      console.log('✅ Saved to database:', data);
+
+      // Transform the returned data to match our interface
+      const transformedRecord: TranscriptionRecord = {
+        id: data.id,
+        userId: data.user_id,
+        transcription: data.transcription || '',
+        type: data.mode || 'tasks',
+        content: data.content,
+        title: data.title || 'Untitled',
+        createdAt: data.created_at,
+        language: data.language || 'en',
+        mode: data.mode || 'tasks',
+        summary: data.summary,
+        tasks: data.tasks
+      };
+
       // Add the new transcription to the beginning of the list
-      setTranscriptions(prev => [data, ...prev]);
-      return data;
+      setTranscriptions(prev => [transformedRecord, ...prev]);
+      return transformedRecord;
     } catch (error) {
       console.error('Error saving transcription:', error);
       throw error;

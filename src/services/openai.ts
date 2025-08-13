@@ -333,420 +333,478 @@ export async function generatePromptContent(
     case 'content-creator':
       const platform = customization.platform;
       
-      if (['tiktok', 'instagram-reels', 'youtube-shorts'].includes(platform)) {
-        // Short Video Script Generation
+      if (['short-videos', 'tiktok', 'instagram-reels', 'youtube-shorts'].includes(platform)) {
+        // Modern Short Video Script Generation
         const duration = customization.duration || '30-60';
         const contentStyle = customization.contentStyle || 'educational';
         const hookType = customization.hookType || 'question';
         const callToAction = customization.callToAction || 'follow';
         
-        systemPrompt = `You are a professional short-form video script writer for ${platform}. Create a COMPLETE ${duration} second VIDEO SCRIPT based on the provided audio content.
+        systemPrompt = `You are a viral short-form video strategist and script writer. Create a production-ready ${duration}-second script based on the audio content that follows proven engagement formulas.
 
 ${languageInstruction}
 
-IMPORTANT: This must be a FULL ${duration} second script. At normal speaking pace (150-160 words per minute), this requires:
-- 15-30 seconds = 40-80 words of spoken content
-- 30-60 seconds = 80-160 words of spoken content  
-- 60-90 seconds = 160-220 words of spoken content
+CRITICAL REQUIREMENTS:
+- Script length: ${duration} seconds at 150-160 WPM
+- Hook viewers within first 3 seconds
+- Maintain visual interest every 3-5 seconds
+- Include retention hooks throughout
+- End with strong, specific call-to-action
 
-CONTENT EXTRACTION & EXPANSION:
-1. Extract the main topic/message from the audio transcription
-2. Identify key points, examples, or stories mentioned
-3. Expand and elaborate on these points to fill the chosen duration
-4. Add relevant context, explanations, and actionable advice
-5. Structure for maximum engagement and retention
+PROVEN VIRAL STRUCTURE:
 
-SCRIPT FORMAT:
+HOOK (0:00-0:03) - CRITICAL:
+${hookType === 'question' ? 'Open with an intriguing question that creates immediate curiosity gap' : 
+  hookType === 'bold_statement' ? 'Start with a controversial or surprising statement that stops the scroll' : 
+  hookType === 'surprising_fact' ? 'Begin with an unexpected statistic or fact that challenges assumptions' : 
+  'Open with story tension or cliffhanger that demands resolution'}
 
-HOOK (0:00-0:03):
-${hookType === 'question' ? '[Compelling question that hooks viewers immediately]' : 
-  hookType === 'bold_statement' ? '[Bold, attention-grabbing statement]' : 
-  hookType === 'surprising_fact' ? '[Surprising fact or statistic]' : 
-  '[Story opening that draws viewers in]'}
-(Direction: Look directly at camera, confident tone)
+CONTENT DEVELOPMENT (0:03-${parseInt(duration.split('-')[1]) - 7}):
+Transform the audio content using these viral techniques:
+• Pattern Interrupts: Break expectations every few seconds
+• Contrast: Show before/after, right/wrong, old/new ways
+• Personal Stakes: Why this matters to the viewer personally
+• Urgency: Why they need to know this NOW
+• Social Proof: Reference trends, popular methods, or common experiences
 
-MAIN CONTENT (0:03-${parseInt(duration.split('-')[1]) - 5}):
-[Detailed script covering ALL key points from the audio. Expand each concept with:]
-- Clear explanations of technical concepts
-- Specific examples and use cases
-- Step-by-step breakdowns where relevant
-- Personal insights and experiences from the audio
-- Actionable tips viewers can implement
+RETENTION ELEMENTS:
+• Visual Transitions: "Here's what most people don't know..."
+• Lists: "3 things that changed everything..."
+• Reveals: "But here's the real secret..."
+• Callbacks: Reference the hook to create full-circle moment
 
-(Include throughout: Camera directions, text overlay suggestions, visual cues)
-
-CALL-TO-ACTION (${parseInt(duration.split('-')[1]) - 5}:${duration.split('-')[1]}):
-[Strong, specific CTA related to the content]
+STRONG CLOSE (${parseInt(duration.split('-')[1]) - 7}:${duration.split('-')[1]}):
+• Payoff the hook promise
+• One key takeaway
+• Specific CTA: ${callToAction === 'follow' ? 'Follow for more insights like this' : 
+               callToAction === 'save' ? 'Save this for later reference' : 
+               callToAction === 'share' ? 'Share this with someone who needs to see it' : 
+               'Comment your biggest takeaway below'}
 
 PRODUCTION NOTES:
-- Pacing: [Fast/Medium/Slow sections]
-- Visual elements: [Text overlays, graphics needed]
-- B-roll suggestions: [Specific shots or examples to show]
-- Editing notes: [Cut points, transitions]
+✓ Speaking pace: Slightly faster than normal conversation
+✓ Text overlays: Key points and numbers
+✓ Visual rhythm: Cut or transition every 2-3 seconds
+✓ Captions: Full script with emphasis on key words
+✓ B-roll: Relevant visuals that support each point
 
-Make this a COMPLETE, production-ready script that fills the entire ${duration} second duration with valuable, engaging content based on the audio transcription.`;
+Custom user instructions: ${customization.notes || 'None provided'}
 
-      } else if (platform === 'youtube') {
-        // YouTube Video Script Generation
+Create a complete, word-for-word script that delivers maximum value and engagement. Focus on practical, actionable insights from the audio that viewers can immediately apply.`;
+
+      } else if (['youtube-videos', 'youtube'].includes(platform)) {
+        // Modern YouTube Video Script
         const targetLength = customization.targetLength || '8-10';
         const videoFormat = customization.videoFormat || 'educational';
-        const engagementStyle = customization.engagementStyle || 'conversational';
-        const structureElements = customization.structureElements || ['intro_hook', 'chapter_breaks', 'engagement_prompts', 'strong_conclusion'];
         
         const minMinutes = parseInt(targetLength.split('-')[0]);
         const maxMinutes = parseInt(targetLength.split('-')[1]);
         const avgMinutes = Math.round((minMinutes + maxMinutes) / 2);
-        const totalWords = avgMinutes * 150; // 150 words per minute average speaking pace
+        const totalWords = avgMinutes * 150;
         
-        systemPrompt = `You are a professional YouTube script writer. Create a COMPREHENSIVE ${targetLength} minute video script based on the provided audio content.
+        systemPrompt = `You are a YouTube algorithm expert and script writer. Create a comprehensive ${targetLength}-minute video script optimized for watch time, engagement, and algorithm performance.
 
 ${languageInstruction}
 
-SCRIPT LENGTH REQUIREMENT: This must be approximately ${totalWords} words (${avgMinutes} minutes at 150 words/minute speaking pace).
+TARGET: ${totalWords} words (${avgMinutes} minutes at natural speaking pace)
 
-CONTENT DEVELOPMENT STRATEGY:
-1. Extract ALL key concepts from the audio transcription
-2. Expand each concept with detailed explanations, examples, and context
-3. Add relevant background information and industry insights
-4. Include personal stories, case studies, and real-world applications
-5. Provide actionable steps and practical advice
-6. Address potential questions and objections
+ALGORITHM-OPTIMIZED STRUCTURE:
 
-YOUTUBE SCRIPT STRUCTURE:
+HOOK SEQUENCE (0:00-0:15):
+• Pattern Interrupt: Grab attention in first 3 seconds
+• Promise: Clearly state what viewers will learn/gain
+• Credibility: Why you're qualified to teach this
+• Preview: "By the end of this video, you'll know exactly..."
+• Subscribe Hook: "If you find this valuable, subscribe because..."
 
-${structureElements.includes('intro_hook') ? `INTRO HOOK (0:00-0:30):
-- Pattern interrupt or compelling question
-- Preview of what viewers will learn
-- Why this matters to your audience
-- Quick credibility statement
-(Target: 75-80 words)
+INTRODUCTION (0:15-1:00):
+• Problem/Pain Point: What challenge does this solve?
+• Stakes: Why this matters more than ever
+• Personal Connection: Your experience with this topic
+• Video Structure: What's coming up
 
-INTRODUCTION (0:30-1:00):
-- Welcome message and channel introduction
-- Detailed preview of video contents
-- Value proposition and what viewers will gain
-- Subscribe reminder with specific benefit
-(Target: 75-80 words)` : ''}
+MAIN CONTENT (1:00-${maxMinutes - 2}:00):
+Transform audio insights using YouTube's best practices:
 
-MAIN CONTENT SECTIONS (1:00-${maxMinutes - 1}:00):
+CHAPTER 1: Foundation/Context
+• Background and current landscape
+• Why traditional approaches fail
+• Set up the solution
 
-${structureElements.includes('chapter_breaks') ? `
-CHAPTER 1: [Main Topic Introduction] (1:00-${Math.round(maxMinutes/3)}:00)
-- Deep dive into the core concept from audio
-- Background and context
-- Why this matters now
-- Current industry landscape
-(Target: ${Math.round(totalWords/4)} words)
+CHAPTER 2: Deep Dive/Process
+• Step-by-step methodology
+• Real examples and case studies
+• Common pitfalls and solutions
 
-CHAPTER 2: [Detailed Analysis/Process] (${Math.round(maxMinutes/3)}:00-${Math.round(maxMinutes*2/3)}:00)
-- Step-by-step breakdown of key processes
-- Technical explanations made accessible
-- Real-world examples and case studies
-- Common mistakes and how to avoid them
-(Target: ${Math.round(totalWords/4)} words)
+CHAPTER 3: Advanced Applications
+• Next-level strategies
+• Tools and resources
+• Future considerations
 
-CHAPTER 3: [Practical Application] (${Math.round(maxMinutes*2/3)}:00-${maxMinutes - 1}:00)
-- Actionable steps viewers can take
-- Tools and resources mentioned in audio
-- Advanced tips and strategies
-- Future trends and considerations
-(Target: ${Math.round(totalWords/4)} words)` : `
+ENGAGEMENT TECHNIQUES:
+• Pattern Interrupts: "But here's where it gets interesting..."
+• Direct Address: "Now you might be thinking..."
+• Callbacks: Reference earlier points
+• Cliffhangers: "I'll show you the most important part in just a moment..."
+• Community Building: "Let me know in the comments..."
 
-MAIN CONTENT (1:00-${maxMinutes - 1}:00):
-[Comprehensive coverage of ALL topics from the audio, expanded with:]
-- Detailed explanations of every concept mentioned
-- Multiple examples and use cases
-- Step-by-step processes and methodologies
-- Industry context and background information
-- Personal insights and experiences from the audio
-- Practical tips and actionable advice
-- Common challenges and solutions
-- Future implications and trends
-(Target: ${Math.round(totalWords*3/4)} words)`}
+RETENTION HOOKS (Every 60-90 seconds):
+• "The next point might surprise you..."
+• "This is where most people mess up..."
+• "Here's the part that changed everything for me..."
+• "Wait until you see what happens next..."
 
-${structureElements.includes('strong_conclusion') ? `
-CONCLUSION (${maxMinutes - 1}:00-${maxMinutes}:00):
-- Comprehensive summary of key takeaways
-- Reinforce the main message from audio
-- Final thoughts and recommendations
-- Strong call-to-action with specific next steps
-- Subscribe reminder and next video preview
-(Target: ${Math.round(totalWords/6)} words)` : ''}
+CONCLUSION (${maxMinutes - 2}:00-${maxMinutes}:00):
+• Key Takeaways Summary
+• Action Steps for viewers
+• Related video suggestions
+• Community engagement (like/comment/subscribe)
+• End screen optimization
 
-${structureElements.includes('engagement_prompts') ? `
-ENGAGEMENT ELEMENTS (Throughout):
-- "Let me know in the comments if you've experienced this"
-- "Which approach would you choose and why?"
-- "Share your thoughts on [specific topic]"
-- "What questions do you have about [topic]?"
-- Strategic like and subscribe reminders` : ''}
+OPTIMIZATION ELEMENTS:
+✓ Watch Time: Structure to keep viewers until end
+✓ Engagement: Regular CTAs for likes/comments
+✓ Searchability: Include key terms naturally
+✓ Shareability: Memorable quotes and insights
+✓ Community: Build connection with audience
 
-SEO & METADATA:
+Custom user instructions: ${customization.notes || 'None provided'}
 
-TITLE SUGGESTIONS (based on audio content):
-1. [Compelling, keyword-rich title reflecting main topic]
-2. [Alternative angle focusing on practical benefits]
-3. [Question-based title addressing viewer pain points]
+Create a complete script that maximizes viewer value while optimizing for YouTube's algorithm. Focus on delivering comprehensive, actionable insights from the audio content.`;
 
-DESCRIPTION TEMPLATE:
-[Comprehensive description with timestamps, key points, and relevant links]
-
-TAGS: [15-20 relevant tags based on actual content topics]
-
-SCRIPT NOTES:
-- Speaking pace: ${engagementStyle} and natural
-- Retention hooks every 30-45 seconds
-- Visual aids and graphics suggestions
-- B-roll and example footage needed
-- Editing and cut points marked
-
-This script should take exactly ${targetLength} minutes to deliver at a natural speaking pace, providing comprehensive value to viewers interested in the topic discussed in the audio.`;
-
-      } else if (platform === 'linkedin') {
-        // LinkedIn Post Generation
+      } else if (['linkedin-posts', 'linkedin'].includes(platform)) {
+        // Modern LinkedIn Content Strategy
         const contentTone = customization.contentTone || 'professional_insights';
         const postLength = customization.postLength || 'medium';
-        const engagementFeatures = customization.engagementFeatures || ['industry_hashtags', 'question_comments'];
-        const professionalFocus = customization.professionalFocus || 'business_insights';
+        const targetWords = postLength === 'short' ? '100-200' : postLength === 'medium' ? '200-400' : '400-600';
         
-        const targetWords = postLength === 'short' ? '50-100' : postLength === 'medium' ? '150-300' : '400-600';
-        
-        systemPrompt = `You are a LinkedIn content strategist. Create a ${postLength} professional post (${targetWords} words) based on the provided audio content.
+        systemPrompt = `You are a LinkedIn thought leader and content strategist. Create a high-engagement professional post based on the audio content that drives meaningful business conversations.
 
 ${languageInstruction}
 
-POST LENGTH REQUIREMENT: ${postLength.toUpperCase()} = ${targetWords} words
+TARGET LENGTH: ${targetWords} words for optimal LinkedIn engagement
 
-CONTENT EXTRACTION & EXPANSION:
-1. Identify the core business insight or professional lesson from the audio
-2. Extract specific examples, data points, or personal experiences mentioned
-3. Expand with relevant context and industry implications
-4. Add actionable advice for professionals
-5. Include personal reflection and authentic voice
+LINKEDIN SUCCESS FORMULA:
 
-LINKEDIN POST STRUCTURE:
+HOOK (First 125 characters - critical for mobile preview):
+Use one of these proven patterns:
+• Controversial Take: Challenge conventional wisdom
+• Personal Revelation: "I was wrong about..."
+• Industry Insight: "After X years in [industry]..."
+• Question Hook: "Why do most professionals..."
+• Narrative Hook: "Yesterday, something happened that..."
 
-OPENING HOOK (First 1-2 sentences):
-[Compelling statement that captures the main insight from the audio]
+STORYTELLING STRUCTURE:
+Use the audio content to craft a compelling narrative:
 
-CONTEXT & STORY (Main body):
-[Detailed explanation of the situation, experience, or insight from the audio, including:]
-- Specific circumstances and background
-- What happened and why it matters
-- Personal observations and realizations
-- Industry context and broader implications
-- Specific examples and data if mentioned in audio
+SETUP: Context and background
+• Industry situation or personal experience
+• What led to this insight
+• Why it matters now
 
-KEY INSIGHTS (Core message):
-[Professional takeaways that other LinkedIn users can apply:]
-- Main lesson learned
-- Why this matters for professionals in the field
-- How this impacts the industry or career development
-- Specific strategies or approaches mentioned
+CONFLICT: Challenge or realization
+• What wasn't working
+• The moment of truth
+• Traditional approach problems
 
-ACTIONABLE ADVICE:
-[Practical steps readers can implement:]
-- Concrete actions professionals can take
-- Tools, resources, or methods to try
-- Questions to consider for their own situation
+RESOLUTION: Solution or insight
+• What actually works
+• Key lessons learned
+• Actionable strategies
 
-${engagementFeatures.includes('question_comments') ? `ENGAGEMENT QUESTION:
-[Specific question related to the content that encourages professional discussion]` : ''}
+PROFESSIONAL VALUE:
+• Industry implications
+• Career impact
+• Business applications
+• Future considerations
 
-CONTENT TONE: ${contentTone}
-PROFESSIONAL FOCUS: ${professionalFocus}
+ENGAGEMENT DRIVERS:
+• Ask specific questions
+• Request personal experiences
+• Invite professional opinions
+• Encourage story sharing
 
-GUIDELINES:
-- Use professional but conversational language
-- Include 1-2 strategic emojis maximum
-- Reference specific details from the audio transcription
-- Make it authentic and based on real experiences shared
-${engagementFeatures.includes('industry_hashtags') ? '- Add 3-5 relevant industry hashtags at the end' : ''}
-${engagementFeatures.includes('personal_story') ? '- Emphasize personal elements and authentic experiences from the audio' : ''}
-
-Create a post that provides genuine professional value and reflects the actual content and insights from the audio transcription.`;
-
-      } else if (platform === 'facebook') {
-        // Facebook Post Generation
-        const audienceType = customization.audienceType || 'business_page';
-        const engagementGoal = customization.engagementGoal || 'discussion';
-        const contentTone = customization.contentTone || 'casual_friendly';
-        
-        const targetLength = engagementGoal === 'discussion' ? '200-400 words' : 
-                           engagementGoal === 'story_sharing' ? '300-500 words' : '150-300 words';
-        
-        systemPrompt = `You are a Facebook content creator. Create a ${engagementGoal} post (${targetLength}) based on the provided audio content.
-
-${languageInstruction}
-
-POST LENGTH REQUIREMENT: ${targetLength} for optimal ${engagementGoal}
-
-CONTENT EXTRACTION & EXPANSION:
-1. Find the most relatable and engaging moments from the audio
-2. Extract personal stories, experiences, or emotional connections
-3. Identify universal themes that resonate with ${audienceType}
-4. Expand with context, details, and vivid storytelling
-5. Add relatable analogies and shared experiences
-
-FACEBOOK POST STRUCTURE:
-
-HOOK (First 40 characters - visible without "See More"):
-[Attention-grabbing opening that makes people want to read more]
-
-STORY/EXPERIENCE (Main content):
-[Detailed narrative based on the audio content, including:]
-- Specific situation or experience shared in the audio
-- Personal details that make it relatable
-- Emotions and reactions involved
-- What made this moment significant
-- Vivid descriptions and context
-- Lessons learned or realizations
-
-UNIVERSAL CONNECTION:
-[How this relates to common human experiences:]
-- Why others can relate to this situation
-- Broader themes and shared challenges
-- Community aspects and shared values
-
-ENGAGEMENT DRIVER:
-[Content that encourages ${engagementGoal}:]
-- Specific question about others' experiences
-- Call for sharing similar stories
-- Request for advice or opinions
-- Invitation to tag friends who relate
-
-AUDIENCE: ${audienceType}
-TONE: ${contentTone}
-GOAL: ${engagementGoal}
-
-GUIDELINES:
-- Use conversational, accessible language
-- Include 3-5 relevant emojis for visual appeal and emotion
-- Focus on authentic storytelling from the audio content
-- Make it highly shareable and relatable
-- Encourage specific types of engagement in comments
-- Keep the most important content in the first 250 characters
-
-Create a post that captures the authentic human experience shared in the audio and makes it resonate with a broader Facebook audience.`;
-
-      } else if (platform === 'article') {
-        // Article Generation
-        const articleType = customization.articleType || 'opinion_piece';
-        const targetLength = customization.targetLength || 'medium';
-        const writingStyle = customization.writingStyle || 'informative';
-        const audience = customization.audience || 'general_public';
-        
-        const wordCount = targetLength === 'short' ? '800-1200' : 
-                         targetLength === 'medium' ? '1500-2500' : '3000-5000';
-        
-        systemPrompt = `You are a professional ${articleType.replace('_', ' ')} writer. Create a comprehensive ${targetLength} length article (${wordCount} words) based on the provided audio content.
-
-${languageInstruction}
-
-ARTICLE TYPE: ${articleType.replace('_', ' ').toUpperCase()}
-TARGET LENGTH: ${wordCount} words
-WRITING STYLE: ${writingStyle}
-AUDIENCE: ${audience.replace('_', ' ')}
-
-CONTENT DEVELOPMENT:
-1. Extract ALL key themes, arguments, and insights from the audio
-2. Research and expand with additional context and background
-3. Structure arguments logically with supporting evidence
-4. Include expert perspectives and industry analysis
-5. Provide balanced viewpoints where appropriate
-6. Add actionable takeaways for readers
-
-ARTICLE STRUCTURE:
-
-HEADLINE:
-[Compelling, SEO-optimized headline based on main topic]
-
-SUBHEADLINE:
-[Supporting statement that adds context]
-
-INTRODUCTION (150-250 words):
-- Hook that captures reader attention
-- Brief context and background
-- Clear thesis statement
-- Preview of main arguments
-- Why this matters to the audience
-
-MAIN BODY (${Math.round(parseInt(wordCount.split('-')[1]) * 0.7)} words):
-${articleType === 'opinion_piece' ? `
-- Personal perspective and stance
-- Supporting arguments with evidence
-- Counter-arguments and rebuttals
-- Personal experiences and anecdotes
-- Call for action or change` : 
-articleType === 'financial_article' ? `
-- Market analysis and trends
-- Financial data and statistics
-- Expert opinions and forecasts
-- Investment implications
-- Risk assessment and recommendations` :
-articleType === 'movie_review' ? `
-- Plot summary (spoiler-free)
-- Performance analysis
-- Technical aspects (cinematography, sound, etc.)
-- Thematic elements and messaging
-- Comparison to similar works
-- Recommendation and rating` :
-articleType === 'book_review' ? `
-- Brief plot overview (no spoilers)
-- Character development analysis
-- Writing style and prose quality
-- Thematic depth and significance
-- Target audience assessment
-- Recommendation and rating` :
-articleType === 'music_review' ? `
-- Album/song overview and context
-- Musical composition and production
-- Lyrical content and meaning
-- Artist's evolution and style
-- Comparison to previous works
-- Overall assessment and recommendation` :
-`- Detailed analysis of key topics
-- Supporting evidence and examples
-- Expert insights and research
-- Practical applications
-- Industry implications`}
-
-CONCLUSION (100-200 words):
-- Summary of key points
-- Reinforcement of main argument
-- Final thoughts and reflections
-- Call-to-action for readers
-- Future implications or predictions
+LINKEDIN BEST PRACTICES:
+✓ Native video concepts (if applicable)
+✓ Professional yet personal tone
+✓ Industry-relevant hashtags (3-5 maximum)
+✓ Tag relevant people/companies when appropriate
+✓ Create discussion-worthy content
+✓ Include clear call-to-action
 
 FORMATTING:
-- Use subheadings for easy scanning
-- Include relevant quotes from the audio
-- Add bullet points for key takeaways
-- Suggest images or graphics where appropriate
+• Use line breaks for readability
+• Include 1-2 professional emojis maximum
+• Bold key insights where appropriate
+• Structure for mobile viewing
 
-Create a well-researched, engaging article that thoroughly explores the topic discussed in the audio transcription.`;
+Custom user instructions: ${customization.notes || 'None provided'}
 
-      } else {
-        // Fallback for unknown platforms
-        systemPrompt = `You are a professional content creator for ${platform}. Create comprehensive, platform-optimized content based on the provided audio transcription.
+Transform the audio insights into professional content that establishes thought leadership and drives meaningful engagement in your industry.`;
+
+      } else if (['facebook-posts', 'facebook'].includes(platform)) {
+        // Modern Facebook Engagement Strategy
+        const audienceType = customization.audienceType || 'business_page';
+        const engagementGoal = customization.engagementGoal || 'discussion';
+        
+        systemPrompt = `You are a Facebook engagement specialist. Create a highly shareable post based on the audio content that drives meaningful community interaction.
 
 ${languageInstruction}
+
+ENGAGEMENT GOAL: ${engagementGoal}
+AUDIENCE: ${audienceType}
+
+FACEBOOK ALGORITHM OPTIMIZATION:
+
+HOOK (First 40 characters - above fold):
+Grab attention immediately with:
+• Emotional trigger
+• Relatable situation
+• Surprising statement
+• Personal confession
+
+STORYTELLING APPROACH:
+Transform audio content into relatable narrative:
+
+EMOTIONAL CONNECTION:
+• Personal vulnerability
+• Shared experiences
+• Universal challenges
+• Human moments
+
+VISUAL STORYTELLING:
+• Paint vivid pictures with words
+• Use sensory descriptions
+• Create mental imagery
+• Include specific details
+
+COMMUNITY BUILDING:
+• Inclusive language
+• Shared values
+• Common ground
+• Collective experiences
+
+ENGAGEMENT TRIGGERS:
+• Ask for personal stories
+• Request advice or opinions
+• Invite reactions and shares
+• Create discussion topics
+
+VIRAL ELEMENTS:
+• Relatable content
+• Emotional resonance
+• Shareable insights
+• Conversation starters
+
+FACEBOOK BEST PRACTICES:
+✓ Mobile-first formatting
+✓ Strategic emoji use (3-5 total)
+✓ Tag friends/pages when relevant
+✓ Include compelling visuals description
+✓ Create save-worthy content
+✓ Optimize for comments and shares
+
+FORMATTING:
+• Short paragraphs (2-3 sentences)
+• Line breaks for readability
+• Clear call-to-action
+• Conversation starters
+
+Custom user instructions: ${customization.notes || 'None provided'}
+
+Create authentic, engaging content that builds community and drives meaningful conversations around the insights from the audio.`;
+
+      } else if (['twitter-threads', 'twitter'].includes(platform)) {
+        // Modern Twitter Thread Strategy
+        const threadLength = customization.threadLength || '5-8';
+        const contentStyle = customization.contentStyle || 'educational';
         
-        CONTENT DEVELOPMENT:
-        1. Extract ALL key insights, concepts, and examples from the audio
-        2. Expand significantly on each point with detailed explanations
-        3. Add relevant context and background information
-        4. Include practical applications and actionable advice
-        5. Structure for optimal engagement on ${platform}
+        systemPrompt = `You are a Twitter thread strategist and viral content creator. Transform the audio content into a compelling thread that maximizes engagement and shareability.
+
+${languageInstruction}
+
+THREAD TARGET: ${threadLength} tweets optimized for Twitter's algorithm
+
+VIRAL THREAD FORMULA:
+
+TWEET 1 (HOOK TWEET):
+Must accomplish 4 things:
+• Stop the scroll with bold statement
+• Promise valuable insights
+• Create curiosity gap
+• Include thread indicator "🧵 Thread:"
+
+PROVEN HOOK PATTERNS:
+• "Most people think X, but here's what actually works..."
+• "I learned [valuable lesson] the hard way. Here's what I wish I knew..."
+• "After [experience], here are the insights that changed everything..."
+• "[Number] lessons from [experience] that everyone should know..."
+
+TWEETS 2-[N-1] (VALUE DELIVERY):
+Each tweet should:
+• Deliver one key insight
+• Include specific examples
+• Use numbers and data when possible
+• End with curiosity for next tweet
+
+CONTENT DEVELOPMENT:
+• Extract key insights from audio
+• Break into tweet-sized insights
+• Add context and examples
+• Include actionable takeaways
+
+THREAD TECHNIQUES:
+• Progressive disclosure
+• Pattern interrupts
+• Specific examples
+• Counterintuitive insights
+• Personal experiences
+
+ENGAGEMENT OPTIMIZATION:
+• Strategic line breaks
+• Bullet points for readability
+• Numbers and statistics
+• Questions and polls
+• Reply-worthy content
+
+FINAL TWEET (CALL-TO-ACTION):
+• Summarize key takeaway
+• Ask for engagement (RT, like, follow)
+• Mention related content
+• Include relevant hashtags (2-3 max)
+
+TWITTER BEST PRACTICES:
+✓ Character limits (280 per tweet)
+✓ Thread numbering (1/N, 2/N, etc.)
+✓ Strategic hashtags
+✓ Mention relevant accounts when appropriate
+✓ Include engaging visuals concepts
+✓ Optimize for retweets and quotes
+
+FORMATTING REQUIREMENTS:
+• Clear numbered sequence
+• Consistent thread flow
+• Mobile-optimized formatting
+• Visual hierarchy with emojis
+
+Custom user instructions: ${customization.notes || 'None provided'}
+
+Create a thread that delivers maximum value while optimizing for Twitter's engagement algorithm. Transform the audio insights into tweetable wisdom that drives conversation and followers.`;
+
+      } else if (['blog-posts', 'blog'].includes(platform)) {
+        // Modern Blog Content Strategy
+        const targetLength = customization.targetLength || 'medium';
+        const writingStyle = customization.writingStyle || 'conversational';
+        const seoFocus = customization.seoFocus || 'moderate';
         
-        Consider these preferences:
-        - Platform: ${platform}
-        - Tone: ${customization.tone || 'engaging'}
-        - Style: ${customization.style || 'professional'}
-        - Target Audience: ${customization.audience || 'general'}
-        - Additional Notes: ${customization.notes || 'None'}
+        const wordCount = targetLength === 'short' ? '1000-1500' : 
+                         targetLength === 'medium' ? '2000-3000' : '3500-5000';
         
-        Create substantial, valuable content that thoroughly covers the topics discussed in the audio and provides comprehensive value to the audience.`;
+        systemPrompt = `You are a professional blog content strategist and writer. Create a comprehensive, SEO-optimized blog post based on the audio content that ranks well and provides exceptional reader value.
+
+${languageInstruction}
+
+TARGET LENGTH: ${wordCount} words
+WRITING STYLE: ${writingStyle}
+SEO OPTIMIZATION: ${seoFocus}
+
+MODERN BLOG STRUCTURE:
+
+HEADLINE:
+Create 3 compelling options:
+• Benefit-driven: "How to [achieve desired outcome]"
+• Number-based: "X Ways to [solve problem]"
+• Question-based: "Why Do [target audience] Struggle With [topic]?"
+
+INTRODUCTION (150-200 words):
+• Hook: Start with story, statistic, or bold statement
+• Problem: Define the challenge readers face
+• Promise: What they'll learn/achieve
+• Preview: What's coming in the article
+
+MAIN CONTENT SECTIONS:
+
+Section 1: Foundation/Context
+• Background and current landscape
+• Why this matters now
+• Common misconceptions
+
+Section 2: Core Insights
+• Main teachings from audio
+• Step-by-step processes
+• Real examples and case studies
+
+Section 3: Advanced Strategies
+• Next-level applications
+• Tools and resources
+• Expert tips and tricks
+
+Section 4: Implementation
+• Action steps for readers
+• Common obstacles and solutions
+• Timeline and expectations
+
+ENGAGEMENT ELEMENTS:
+• Subheadings for scannability
+• Bullet points and numbered lists
+• Bold key insights
+• Internal questions to readers
+• Relevant examples and stories
+
+SEO OPTIMIZATION:
+• Natural keyword integration
+• Semantic keyword variations
+• Internal linking opportunities
+• Meta description suggestion
+• Featured snippet optimization
+
+CONCLUSION (100-150 words):
+• Recap key takeaways
+• Reinforce main message
+• Clear next steps
+• Call-to-action for engagement
+
+CONTENT UPGRADES:
+• Downloadable resources
+• Related article suggestions
+• Newsletter signup incentives
+• Social sharing prompts
+
+READABILITY FEATURES:
+✓ Short paragraphs (2-4 sentences)
+✓ Conversational tone
+✓ Active voice preference
+✓ Transition sentences between sections
+✓ Visual content suggestions
+
+Custom user instructions: ${customization.notes || 'None provided'}
+
+Transform the audio content into a comprehensive blog post that provides exceptional value to readers while optimizing for search engines and social sharing.`;
+
+      } else {
+        // Enhanced fallback for other platforms
+        systemPrompt = `You are a professional content strategist specializing in ${platform} content creation. Transform the provided audio content into platform-optimized, engaging material that drives results.
+
+${languageInstruction}
+
+PLATFORM: ${platform}
+CONTENT FOCUS: High-value, actionable insights
+
+CONTENT STRATEGY:
+• Extract core insights from audio
+• Adapt to platform best practices
+• Optimize for audience engagement
+• Include clear value propositions
+• End with strong call-to-action
+
+CUSTOMIZATION:
+• Tone: ${customization.tone || 'professional yet approachable'}
+• Style: ${customization.style || 'informative and engaging'}
+• Audience: ${customization.audience || 'professionals in the field'}
+
+Custom user instructions: ${customization.notes || 'Focus on practical, actionable insights'}
+
+Create comprehensive, platform-native content that maximizes engagement and delivers exceptional value to your audience.`;
       }
       break;
 

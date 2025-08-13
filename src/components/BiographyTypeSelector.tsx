@@ -42,13 +42,14 @@ const getTranslations = (language: string) => {
           title: 'Meeting Notes',
           description: 'Capture key points, decisions, and action items from meetings'
         },
+        'content-creator': {
+          title: 'Content Creator',
+          description: 'Transform your voice into engaging content for 6+ social platforms: TikTok, YouTube, LinkedIn, Facebook, Twitter, and blogs',
+          badge: 'Most Popular'
+        },
         article: {
           title: 'Article',
           description: 'Convert your thoughts into well-organized articles'
-        },
-        'content-creator': {
-          title: 'Content Creator',
-          description: 'Transform your voice into engaging content for social media, articles, and more'
         }
       },
       platformSelection: {
@@ -99,13 +100,14 @@ const getTranslations = (language: string) => {
           title: 'Møtenotater',
           description: 'Fang opp hovedpunkter, beslutninger og handlingspunkter fra møter'
         },
+        'content-creator': {
+          title: 'Innholdsproduksjon',
+          description: 'Gjør stemmen din om til engasjerende innhold for 6+ plattformer: TikTok, YouTube, LinkedIn, Facebook, Twitter og blogger',
+          badge: 'Mest Populær'
+        },
         article: {
           title: 'Artikkel',
           description: 'Gjør tankene dine om til velorganiserte artikler'
-        },
-        'content-creator': {
-          title: 'Innholdsproduksjon',
-          description: 'Gjør stemmen din om til engasjerende innhold for sosiale medier, artikler og mer'
         }
       },
       platformSelection: {
@@ -303,65 +305,113 @@ export default function BiographyTypeSelector({ onTypeSelect, language, resetKey
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 text-gray-800">
         {t.title}
       </h2>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {(Object.keys(t.types) as Array<keyof typeof t.types>).map((type) => {
+      <div className="space-y-6">
+        {/* Top row: Three smaller cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {(Object.keys(t.types) as Array<keyof typeof t.types>)
+            .filter(type => type !== 'content-creator')
+            .map((type) => {
+            const Icon = typeIcons[type];
+            const isTask = type === 'tasks';
+            const isMeeting = type === 'meeting';
+            const isArticle = type === 'article';
+            
+            return (
+              <motion.button
+                key={type}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleModeSelect(type)}
+                className={`bg-white rounded-xl shadow-lg p-5 text-left hover:shadow-xl transition-all duration-300 border-2 border-transparent min-h-[180px] ${
+                  isTask ? 'hover:border-blue-500' : 
+                  isMeeting ? 'hover:border-green-500' :
+                  'hover:border-orange-500'
+                }`}
+              >
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className={`p-2.5 rounded-lg ${
+                      isTask ? 'bg-blue-100' : 
+                      isMeeting ? 'bg-green-100' :
+                      'bg-orange-100'
+                    }`}>
+                      <Icon className={`w-6 h-6 ${
+                        isTask ? 'text-blue-600' : 
+                        isMeeting ? 'text-green-600' :
+                        'text-orange-600'
+                      }`} />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {t.types[type].title}
+                    </h3>
+                  </div>
+                  
+                  <p className="text-sm text-gray-600 mb-4 flex-grow leading-relaxed">
+                    {t.types[type].description}
+                  </p>
+                  
+                  <div className={`flex items-center font-medium text-sm mt-auto ${
+                    isTask ? 'text-blue-600' : 
+                    isMeeting ? 'text-green-600' :
+                    'text-orange-600'
+                  }`}>
+                    <span>{language === 'no' ? 'Velg' : 'Select'}</span>
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </div>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Bottom row: Content Creation - Full width prominent card */}
+        {(Object.keys(t.types) as Array<keyof typeof t.types>)
+          .filter(type => type === 'content-creator')
+          .map((type) => {
           const Icon = typeIcons[type];
-          const isTask = type === 'tasks';
-          const isMeeting = type === 'meeting';
-          const isArticle = type === 'article';
-          const isContentCreator = type === 'content-creator';
           
           return (
             <motion.button
               key={type}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               onClick={() => handleModeSelect(type)}
-              className={`bg-white rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all duration-300 border-2 border-transparent ${
-                isTask ? 'hover:border-blue-500' : 
-                isMeeting ? 'hover:border-green-500' :
-                isArticle ? 'hover:border-orange-500' :
-                isContentCreator ? 'hover:border-red-500' :
-                'hover:border-purple-500'
-              }`}
+              className="w-full bg-gradient-to-br from-white to-red-50 rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-red-500 relative"
             >
-              <div className="flex items-start space-x-4">
-                <div className={`p-3 rounded-lg ${
-                  isTask ? 'bg-blue-100' : 
-                  isMeeting ? 'bg-green-100' :
-                  isArticle ? 'bg-orange-100' :
-                  isContentCreator ? 'bg-red-100' :
-                  'bg-purple-100'
-                }`}>
-                  <Icon className={`w-6 h-6 ${
-                    isTask ? 'text-blue-600' : 
-                    isMeeting ? 'text-green-600' :
-                    isArticle ? 'text-orange-600' :
-                    isContentCreator ? 'text-red-600' :
-                    'text-purple-600'
-                  }`} />
+              <div className="absolute top-4 right-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium">
+                {t.types[type].badge}
+              </div>
+              
+              <div className="flex items-start space-x-6">
+                <div className="p-4 rounded-lg bg-red-100 flex-shrink-0">
+                  <Icon className="w-8 h-8 text-red-600" />
                 </div>
+                
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  <h3 className="text-2xl font-semibold text-gray-800 mb-3">
                     {t.types[type].title}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-base text-gray-600 mb-4 leading-relaxed max-w-3xl">
                     {t.types[type].description}
                   </p>
-                  <div className={`flex items-center font-medium text-sm ${
-                    isTask ? 'text-blue-600' : 
-                    isMeeting ? 'text-green-600' :
-                    isArticle ? 'text-orange-600' :
-                    isContentCreator ? 'text-red-600' :
-                    'text-purple-600'
-                  }`}>
+                  
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">📱 TikTok</span>
+                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">📺 YouTube</span>
+                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">💼 LinkedIn</span>
+                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">👥 Facebook</span>
+                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">🐦 Twitter</span>
+                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">📝 Blog</span>
+                  </div>
+                  
+                  <div className="flex items-center font-medium text-base text-red-600">
                     <span>{language === 'no' ? 'Velg' : 'Select'}</span>
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                    <ArrowRight className="w-5 h-5 ml-2" />
                   </div>
                 </div>
               </div>
