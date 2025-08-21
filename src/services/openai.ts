@@ -48,8 +48,11 @@ export async function transcribeAudio(
     // Report progress for request preparation
     onProgress?.(0.2);
 
-    const response = await fetch('/api/transcriptions/transcribe', {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe`, {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
       body: formData,
     });
 
@@ -125,9 +128,12 @@ async function processChunk(
 ): Promise<BiographyContent> {
   const prompt = buildPrompt(text, preferences, language);
   
-  const response = await fetch('/api/transcriptions/generate', {
+          const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    },
     body: JSON.stringify({ prompt, provider: 'anthropic', model: 'claude-3-haiku-20240307' })
   });
 
@@ -253,9 +259,12 @@ export async function generateSummaryAndTasks(
     // Report progress for API call preparation
     onProgress?.(0.3);
 
-    const completionRes = await fetch('/api/transcriptions/generate', {
+    const completionRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
       body: JSON.stringify({ prompt: systemPrompt + "\n\n" + transcription, provider: 'anthropic', model: 'claude-3-haiku-20240307' })
     });
 
@@ -986,9 +995,12 @@ Create a well-researched, engaging article that thoroughly explores the topic di
     // Report progress for API call preparation
     onProgress?.(0.3);
 
-    const completionRes = await fetch('/api/transcriptions/generate', {
+    const completionRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
       body: JSON.stringify({ prompt: systemPrompt + "\n\n" + transcription, max_tokens: 4000, temperature: 0.7, provider: 'anthropic', model: 'claude-3-haiku-20240307' })
     });
 

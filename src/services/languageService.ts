@@ -6,9 +6,12 @@ export const enforceLanguage = async (
   type: string
 ): Promise<BiographyContent> => {
   try {
-    const completionRes = await fetch('/api/transcriptions/generate', {
+    const completionRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
       body: JSON.stringify({
         prompt: `You are a professional translator. Translate the following content to ${targetLanguage} while maintaining the original style and format.\n\n${content}`,
         temperature: 0.7,

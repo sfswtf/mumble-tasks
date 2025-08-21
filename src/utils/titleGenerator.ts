@@ -59,9 +59,12 @@ Examples of GOOD titles:
 
 Only return the title, no explanation.`;
 
-    const res = await fetch('/api/transcriptions/generate', {
+    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
       body: JSON.stringify({ prompt: `${systemPrompt}\n\nCreate a title for this content:\n\n${text.substring(0, 500)}...`, temperature: 0.3, max_tokens: 50, provider: 'anthropic', model: 'claude-3-haiku-20240307' })
     });
     if (!res.ok) throw new Error('Failed to generate title');

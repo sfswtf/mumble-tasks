@@ -4,8 +4,11 @@ export const transcribeAudio = async (audioFile: File): Promise<string> => {
     formData.append('file', audioFile);
     formData.append('model', 'whisper-1');
 
-    const response = await fetch('/api/transcriptions/transcribe', {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe`, {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
       body: formData,
     });
 
@@ -23,10 +26,11 @@ export const transcribeAudio = async (audioFile: File): Promise<string> => {
 
 export const generateSummaryAndTasks = async (transcription: string) => {
   try {
-    const response = await fetch('/api/transcriptions/generate', {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify({
         prompt: `You are a helpful assistant that analyzes voice memo transcriptions. For each transcription, provide a concise summary and extract actionable tasks.
