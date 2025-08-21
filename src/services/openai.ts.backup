@@ -1,10 +1,7 @@
 import OpenAI from 'openai';
 import { BiographyContent } from '../types';
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
+// Deprecated: do not use client-side OpenAI in production. This file is retained only as a backup and should not be imported.
 
 // Approximate token count (rough estimate: 1 token ≈ 4 characters)
 function estimateTokenCount(text: string): number {

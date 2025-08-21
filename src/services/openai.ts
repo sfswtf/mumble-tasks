@@ -1,10 +1,4 @@
-import OpenAI from 'openai';
 import { BiographyContent } from '../types';
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
 
 // Approximate token count (rough estimate: 1 token ≈ 4 characters)
 function estimateTokenCount(text: string): number {
@@ -37,8 +31,8 @@ function chunkText(text: string, maxTokens: number = 15000): string[] {
 }
 
 export async function transcribeAudio(
-  audioFile: File, 
-  language: string = 'en', 
+  audioFile: File,
+  language: string = 'en',
   onProgress?: (progress: number) => void
 ): Promise<{ text: string }> {
   try {
@@ -54,11 +48,8 @@ export async function transcribeAudio(
     // Report progress for request preparation
     onProgress?.(0.2);
 
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    const response = await fetch('/api/transcriptions/transcribe', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
       body: formData,
     });
 
@@ -134,17 +125,19 @@ async function processChunk(
 ): Promise<BiographyContent> {
   const prompt = buildPrompt(text, preferences, language);
   
-  const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    messages: [
-      { role: "system", content: "You are a helpful assistant that processes text according to user preferences." },
-      { role: "user", content: prompt }
-    ],
-    temperature: 0.7,
-    max_tokens: 4000
+  const response = await fetch('/api/transcriptions/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, provider: 'anthropic', model: 'claude-3-haiku-20240307' })
   });
-  
-  const content = response.choices[0]?.message?.content || '';
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to generate content');
+  }
+
+  const data = await response.json();
+  const content = data.content || '';
   
   return {
     content,
@@ -260,26 +253,23 @@ export async function generateSummaryAndTasks(
     // Report progress for API call preparation
     onProgress?.(0.3);
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: transcription
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 2000
+    const completionRes = await fetch('/api/transcriptions/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: systemPrompt + "\n\n" + transcription, provider: 'anthropic', model: 'claude-3-haiku-20240307' })
     });
+
+    if (!completionRes.ok) {
+      const errorData = await completionRes.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to generate summary and tasks');
+    }
+
+    const completion = await completionRes.json();
 
     // Report progress for response processing
     onProgress?.(0.8);
 
-    const response = completion.choices[0]?.message?.content;
+    const response = completion.content;
     if (!response) {
       throw new Error('No response received from OpenAI');
     }
@@ -996,26 +986,23 @@ Create a well-researched, engaging article that thoroughly explores the topic di
     // Report progress for API call preparation
     onProgress?.(0.3);
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: transcription
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 4000
+    const completionRes = await fetch('/api/transcriptions/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: systemPrompt + "\n\n" + transcription, max_tokens: 4000, temperature: 0.7, provider: 'anthropic', model: 'claude-3-haiku-20240307' })
     });
+
+    if (!completionRes.ok) {
+      const errorData = await completionRes.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to generate content');
+    }
+
+    const completion = await completionRes.json();
 
     // Report progress for response processing
     onProgress?.(0.8);
 
-    const content = completion.choices[0]?.message?.content;
+    const content = completion.content as string;
     if (!content) {
       throw new Error('No content generated');
     }

@@ -1,21 +1,11 @@
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true // Note: In production, API calls should go through your backend
-});
-
 export const transcribeAudio = async (audioFile: File): Promise<string> => {
   try {
     const formData = new FormData();
     formData.append('file', audioFile);
     formData.append('model', 'whisper-1');
 
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    const response = await fetch('/api/transcriptions/transcribe', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
       body: formData,
     });
 

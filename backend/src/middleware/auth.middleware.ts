@@ -27,7 +27,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     const token = authHeader.split(' ')[1];
 
     // 2) Verify token
-    const decoded = jwt.verify(token, config.jwtSecret) as JwtPayload;
+    const decoded = jwt.verify(token, config.jwtSecret as string) as JwtPayload;
 
     // 3) Check if user still exists
     const user = await User.findById(decoded.id);

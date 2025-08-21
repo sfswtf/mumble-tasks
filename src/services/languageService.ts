@@ -1,10 +1,4 @@
-import OpenAI from 'openai';
 import { BiographyContent } from '../types';
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
 
 export const enforceLanguage = async (
   content: string,
@@ -12,23 +6,20 @@ export const enforceLanguage = async (
   type: string
 ): Promise<BiographyContent> => {
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: `You are a professional translator. Translate the following content to ${targetLanguage} while maintaining the original style and format.`
-        },
-        {
-          role: "user",
-          content
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 2000
+    const completionRes = await fetch('/api/transcriptions/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: `You are a professional translator. Translate the following content to ${targetLanguage} while maintaining the original style and format.\n\n${content}`,
+        temperature: 0.7,
+        max_tokens: 2000,
+        provider: 'anthropic',
+        model: 'claude-3-haiku-20240307'
+      })
     });
-
-    const translatedContent = completion.choices[0]?.message?.content;
+    if (!completionRes.ok) throw new Error('Translation failed');
+    const data = await completionRes.json();
+    const translatedContent = data.content;
     if (!translatedContent) {
       throw new Error('No translation generated');
     }

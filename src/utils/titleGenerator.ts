@@ -1,10 +1,5 @@
 import { truncate } from './stringUtils';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
+// No client-side OpenAI usage. Titles are generated via backend proxy.
 
 export async function generateTitle(text: string, language: string = 'en'): Promise<string> {
   // Fallback function for simple title generation
@@ -64,23 +59,14 @@ Examples of GOOD titles:
 
 Only return the title, no explanation.`;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: `Create a title for this content:\n\n${text.substring(0, 500)}...`
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 20
+    const res = await fetch('/api/transcriptions/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: `${systemPrompt}\n\nCreate a title for this content:\n\n${text.substring(0, 500)}...`, temperature: 0.3, max_tokens: 50, provider: 'anthropic', model: 'claude-3-haiku-20240307' })
     });
-
-    const aiTitle = completion.choices[0]?.message?.content?.trim();
+    if (!res.ok) throw new Error('Failed to generate title');
+    const data = await res.json();
+    const aiTitle = (data.content as string | undefined)?.trim();
     
     if (aiTitle && aiTitle.length > 5 && aiTitle.length <= 60) {
       // Remove quotes if present

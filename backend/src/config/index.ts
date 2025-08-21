@@ -8,7 +8,8 @@ export const config = {
   mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/mumble',
   jwtSecret: process.env.JWT_SECRET || 'your_jwt_secret_key',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  openaiApiKey: process.env.OPENAI_API_KEY,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  assemblyaiApiKey: process.env.ASSEMBLYAI_API_KEY,
   rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),
   rateLimitMaxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173'

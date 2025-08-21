@@ -5,9 +5,9 @@ import { AppError } from '../middleware/errorHandler';
 import { config } from '../config';
 
 const signToken = (id: string): string => {
-  return jwt.sign({ id }, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn
-  });
+  const secret = (config.jwtSecret || 'dev_secret') as jwt.Secret;
+  const options: jwt.SignOptions = { expiresIn: (config.jwtExpiresIn || '7d') as any };
+  return jwt.sign({ id }, secret, options);
 };
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -30,7 +30,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     const token = signToken(user._id);
 
     // Remove password from output
-    user.password = undefined;
+    (user as any).password = undefined;
 
     res.status(201).json({
       status: 'success',
@@ -61,7 +61,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const token = signToken(user._id);
 
     // Remove password from output
-    user.password = undefined;
+    (user as any).password = undefined;
 
     res.status(200).json({
       status: 'success',
@@ -81,7 +81,7 @@ export const getMe = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     // Remove password from output
-    user.password = undefined;
+    (user as any).password = undefined;
 
     res.status(200).json({
       status: 'success',
@@ -108,7 +108,7 @@ export const updateMe = async (req: Request, res: Response, next: NextFunction) 
     }
 
     // Remove password from output
-    user.password = undefined;
+    (user as any).password = undefined;
 
     res.status(200).json({
       status: 'success',

@@ -3,7 +3,24 @@ import app from './app';
 import { config } from './config';
 import { logger } from './utils/logger';
 
-// Connect to MongoDB
+// Safe confirmation that API keys are present (redacted)
+if (config.assemblyaiApiKey) {
+  const key = config.assemblyaiApiKey;
+  const redacted = `${key.slice(0, 6)}...${key.slice(-4)}`;
+  logger.info(`AssemblyAI key loaded: ${redacted}`);
+} else {
+  logger.warn('AssemblyAI key missing. Set ASSEMBLYAI_API_KEY in backend/.env');
+}
+
+if (config.anthropicApiKey) {
+  const key = config.anthropicApiKey;
+  const redacted = `${key.slice(0, 6)}...${key.slice(-4)}`;
+  logger.info(`Anthropic key loaded: ${redacted}`);
+} else {
+  logger.warn('Anthropic key missing. Set ANTHROPIC_API_KEY in backend/.env');
+}
+
+// Connect to MongoDB (non-fatal in dev)
 mongoose
   .connect(config.mongodbUri)
   .then(() => {
@@ -11,7 +28,7 @@ mongoose
   })
   .catch((error) => {
     logger.error('MongoDB connection error:', error);
-    process.exit(1);
+    logger.warn('Continuing without MongoDB connection (dev mode).');
   });
 
 // Start server
