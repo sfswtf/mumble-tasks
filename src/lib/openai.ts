@@ -23,24 +23,31 @@ export const transcribeAudio = async (audioFile: File): Promise<string> => {
 
 export const generateSummaryAndTasks = async (transcription: string) => {
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are a helpful assistant that analyzes voice memo transcriptions. For each transcription, provide a concise summary and extract actionable tasks."
-        },
-        {
-          role: "user",
-          content: `Please analyze this voice memo transcription and provide: 1) A brief summary 2) A list of actionable tasks. Transcription: "${transcription}"`
-        }
-      ]
+    const response = await fetch('/api/transcriptions/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: `You are a helpful assistant that analyzes voice memo transcriptions. For each transcription, provide a concise summary and extract actionable tasks.
+
+Please analyze this voice memo transcription and provide: 1) A brief summary 2) A list of actionable tasks. 
+
+Transcription: "${transcription}"`,
+        provider: 'anthropic',
+        model: 'claude-3-haiku-20240307'
+      }),
     });
 
-    const response = completion.choices[0]?.message?.content || '';
+    if (!response.ok) {
+      throw new Error('Failed to generate summary and tasks');
+    }
+
+    const data = await response.json();
+    const content = data.content || '';
     
     // Parse the response to extract summary and tasks
-    const sections = response.split('\n\n');
+    const sections = content.split('\n\n');
     const summary = sections[0]?.replace(/^Summary:?\s*/i, '').trim();
     const tasksList = sections[1]?.split('\n')
       .filter(line => line.trim().startsWith('-') || line.trim().startsWith('•'))
@@ -51,7 +58,7 @@ export const generateSummaryAndTasks = async (transcription: string) => {
       tasks: tasksList
     };
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error('API error:', error);
     throw error;
   }
 }
