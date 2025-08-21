@@ -73,7 +73,55 @@ export default function ResultsSection({ results, onUpdateTask, language }: Resu
   const [showTranscript, setShowTranscript] = useState(false);
   const [editingTask, setEditingTask] = useState<number | null>(null);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const [translatedTranscription, setTranslatedTranscription] = useState<string>('');
+  const [translatingTranscription, setTranslatingTranscription] = useState(false);
   const t = getTranslations(language);
+
+  // Translate transcription to Norwegian if needed
+  const translateTranscription = async (text: string): Promise<string> => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          prompt: `Translate the following text to Norwegian. Only return the translated text, no explanations:\n\n${text}`,
+          provider: 'anthropic',
+          model: 'claude-3-haiku-20240307',
+          temperature: 0.3,
+          max_tokens: 2000
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Translation failed');
+      }
+
+      const data = await response.json();
+      return data.content || text;
+    } catch (error) {
+      console.error('Translation error:', error);
+      return text; // Return original text if translation fails
+    }
+  };
+
+  // Translate transcription when language is Norwegian and transcription changes
+  useEffect(() => {
+    if (language === 'no' && results?.transcription && !translatedTranscription && !translatingTranscription) {
+      setTranslatingTranscription(true);
+      translateTranscription(results.transcription)
+        .then(translated => {
+          setTranslatedTranscription(translated);
+        })
+        .finally(() => {
+          setTranslatingTranscription(false);
+        });
+    } else if (language !== 'no') {
+      setTranslatedTranscription('');
+    }
+  }, [results?.transcription, language, translatedTranscription, translatingTranscription]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -767,9 +815,17 @@ export default function ResultsSection({ results, onUpdateTask, language }: Resu
             >
               <div className="px-6 pb-6 pt-0 border-t border-gray-200">
                 <div className="max-h-96 overflow-y-auto bg-gray-50 rounded-lg p-4 mt-4">
-                  <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed font-mono">
-                    {results.transcription}
-                  </p>
+                  {translatingTranscription ? (
+                    <div className="text-center py-4">
+                      <div className="animate-pulse text-gray-600">
+                        {language === 'no' ? 'Oversetter transkripsjon...' : 'Translating transcription...'}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed font-mono">
+                      {language === 'no' && translatedTranscription ? translatedTranscription : results.transcription}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
