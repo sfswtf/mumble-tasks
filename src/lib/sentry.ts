@@ -20,6 +20,10 @@ export const initSentry = () => {
       return breadcrumb;
     },
   });
+  
+  if (typeof window !== 'undefined') {
+    (window as any).Sentry = Sentry;
+  }
 };
 
 export const captureError = (error: Error, context?: Record<string, any>) => {

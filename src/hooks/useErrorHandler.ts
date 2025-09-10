@@ -29,7 +29,7 @@ export const useErrorHandler = () => {
 
     if (error instanceof Error) {
       captureError(error, {
-        errorCode: error.code,
+        errorCode: (error as any).code,
         hasRetry: !!retryFn,
         component: 'useErrorHandler'
       });
@@ -68,4 +68,4 @@ export const useErrorHandler = () => {
     clearError,
     retryOperation
   };
-};  
+};    
