@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useTranscriptions } from './hooks/useTranscriptions';
 import Header from './components/Header';
@@ -8,7 +8,6 @@ import ProcessingIndicator from './components/ProcessingIndicator';
 import ResultsSection from './components/ResultsSection';
 import BiographyResults from './components/BiographyResults';
 import ScriptOutputRenderer from './components/ScriptOutput/ScriptOutputRenderer';
-import TranscriptionHistory from './components/TranscriptionHistory';
 import AuthModal from './components/AuthModal';
 import BiographyCustomization from './components/BiographyCustomization';
 import ModeIndicator from './components/ModeIndicator';
@@ -18,7 +17,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { generateTitle } from './utils/titleGenerator';
 import { useErrorHandler } from './hooks/useErrorHandler';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { ExportOptions } from './components/ExportOptions';
 import ErrorMessage from './components/ErrorMessage';
 import { TranscriptionMode, BiographyPreferences, DraftTranscription, TranscriptionRecord } from './types';
 import { SearchBar } from './components/SearchBar';
@@ -86,10 +84,10 @@ function App() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
 
-  // Refs for auto-scrolling
-  const stepWizardRef = useRef<HTMLDivElement>(null);
-  const processingRef = useRef<HTMLDivElement>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
+  // Refs for auto-scrolling (currently unused but reserved for future scroll optimization)
+  // const stepWizardRef = useRef<HTMLDivElement>(null);
+  // const processingRef = useRef<HTMLDivElement>(null);
+  // const resultsRef = useRef<HTMLDivElement>(null);
 
   // Global error handler
   useEffect(() => {
@@ -132,7 +130,7 @@ function App() {
   const handleTypeSelect = (type: string) => {
     // Handle content-creator with platform selection
     if (type.startsWith('content-creator:')) {
-      const [mode, platform] = type.split(':');
+      const [, platform] = type.split(':');
       setBiographyType('content-creator' as TranscriptionMode);
       // Store platform in customization
       setCustomization(prev => ({
@@ -308,7 +306,7 @@ function App() {
         };
 
         setResults(result);
-        const savedRecord = await saveTranscription({
+        await saveTranscription({
           id: result.id,
           userId: user.id,
           transcription,
@@ -366,7 +364,7 @@ function App() {
           enhancedTitle = `${platformName} - ${result.title}`;
         }
         
-        const savedRecord = await saveTranscription({
+        await saveTranscription({
           id: result.id,
           userId: user.id,
           transcription,
@@ -406,7 +404,7 @@ function App() {
         };
 
         setResults(result);
-        const savedRecord = await saveTranscription({
+        await saveTranscription({
           id: result.id,
           userId: user.id,
           transcription,
