@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useTranscriptions } from './hooks/useTranscriptions';
 import Header from './components/Header';
@@ -8,17 +8,16 @@ import ProcessingIndicator from './components/ProcessingIndicator';
 import ResultsSection from './components/ResultsSection';
 import BiographyResults from './components/BiographyResults';
 import ScriptOutputRenderer from './components/ScriptOutput/ScriptOutputRenderer';
-import TranscriptionHistory from './components/TranscriptionHistory';
 import AuthModal from './components/AuthModal';
 import BiographyCustomization from './components/BiographyCustomization';
 import ModeIndicator from './components/ModeIndicator';
 import StepProgressIndicator from './components/StepProgressIndicator';
+import { TranscriptionHistoryView } from './components/TranscriptionHistoryView';
 import { transcribeAudio, generatePromptContent, generateSummaryAndTasks } from './services/openai';
 import { v4 as uuidv4 } from 'uuid';
 import { generateTitle } from './utils/titleGenerator';
 import { useErrorHandler } from './hooks/useErrorHandler';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { ExportOptions } from './components/ExportOptions';
 import ErrorMessage from './components/ErrorMessage';
 import { TranscriptionMode, BiographyPreferences, DraftTranscription, TranscriptionRecord } from './types';
 import { SearchBar } from './components/SearchBar';
@@ -86,11 +85,6 @@ function App() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
 
-  // Refs for auto-scrolling
-  const stepWizardRef = useRef<HTMLDivElement>(null);
-  const processingRef = useRef<HTMLDivElement>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
-
   // Global error handler
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
@@ -129,10 +123,10 @@ function App() {
     localStorage.setItem('preferredLanguage', language);
   };
 
-  const handleTypeSelect = (type: string) => {
+  const handleTypeSelect = useCallback((type: string) => {
     // Handle content-creator with platform selection
     if (type.startsWith('content-creator:')) {
-      const [mode, platform] = type.split(':');
+      const [, platform] = type.split(':');
       setBiographyType('content-creator' as TranscriptionMode);
       // Store platform in customization
       setCustomization(prev => ({
@@ -160,23 +154,23 @@ function App() {
         scrollToSection('customize-section');
       }
     }
-  };
+  }, []);
 
-  const handleCustomization = (preferences: BiographyPreferences) => {
+  const handleCustomization = useCallback((preferences: BiographyPreferences) => {
     setCustomization(preferences);
     setCompletedSteps(prev => [...prev, 'customize']);
     setCurrentStep('language');
     scrollToSection('step-wizard-section');
-  };
+  }, []);
 
-  const handleLanguageSelect = (language: string) => {
+  const handleLanguageSelect = useCallback((language: string) => {
     setSelectedLanguage(language);
     setCompletedSteps(prev => [...prev, 'language']);
     setCurrentStep('record');
     scrollToSection('step-wizard-section');
-  };
+  }, []);
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = useCallback((file: File) => {
     setSelectedFile(file);
     setResults(null);
     setError(null);
@@ -184,7 +178,7 @@ function App() {
     setCurrentStep('process');
     // Auto-scroll to processing section
     scrollToSection('processing-section');
-  };
+  }, []);
 
   const handleStepNavigation = (step: string) => {
     // Allow navigation to previously completed steps or current step
@@ -430,7 +424,7 @@ function App() {
     }
   };
 
-  const handleNewTranscription = () => {
+  const handleNewTranscription = useCallback(() => {
     // Stop any ongoing processing immediately
     setIsProcessing(false);
     setProgress(0);
@@ -487,7 +481,7 @@ function App() {
     
     // Increment reset key to force component resets
     setResetKey(prev => prev + 1);
-  };
+  }, [clearError, setDraftTranscription]);
 
   const handleAuth = async (email: string, password: string, isSignUp = false) => {
     try {
@@ -545,15 +539,15 @@ function App() {
     setSearchResults(results);
   };
 
-  const handleSearchSelect = (result: { id: string; title: string; type: string; createdAt: string }) => {
+  const handleSearchSelect = useCallback((result: { id: string; title: string; type: string; createdAt: string }) => {
     const transcription = transcriptions.find(t => t.id === result.id);
     if (transcription) {
       setResults(transcription.content);
       setShowHistory(false);
     }
-  };
+  }, [transcriptions]);
 
-  const renderResults = () => {
+  const renderResults = useMemo(() => {
     if (!results) return null;
 
     // For content creator, use the new platform-specific output renderer
@@ -597,9 +591,9 @@ function App() {
     }
 
     return null;
-  };
+  }, [results, biographyType, customization.platform, customization, selectedLanguage]);
 
-  const translations = getTranslations(selectedLanguage);
+  const translations = useMemo(() => getTranslations(selectedLanguage), [selectedLanguage]);
 
   // Add useEffect to scroll to results when they're ready
   useEffect(() => {
@@ -607,6 +601,16 @@ function App() {
       scrollToSection('results-section', 50);
     }
   }, [results, isProcessing]);
+
+  const handleHistoryRecordSelect = useCallback((record: TranscriptionRecord) => {
+    setResults(record.content);
+    setShowHistory(false);
+    
+    if (record.mode) {
+      setBiographyType(record.mode as TranscriptionMode);
+    }
+    setCurrentStep('process');
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -670,122 +674,13 @@ function App() {
           </div>
         )}
 
-        {/* TEMPORARY: Always show app content for testing, bypass auth check */}
         {user ? (
           showHistory ? (
-            <div className="min-h-screen">
-              {/* Inlined TranscriptionHistory for better error handling */}
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                  {selectedLanguage === 'no' ? 'Opptakshistorikk' : 'Recording History'}
-                </h2>
-                
-                {transcriptions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 text-lg mb-2">
-                      {selectedLanguage === 'no' ? 'Ingen opptak funnet' : 'No recordings found'}
-                    </p>
-                    <p className="text-gray-400 text-sm">
-                      {selectedLanguage === 'no' 
-                        ? 'Start med å lage ditt første lydmemo eller oppgaveliste' 
-                        : 'Start by creating your first voice memo or task list'
-                      }
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {transcriptions.map((record, index) => {
-                      if (!record) {
-                        return null;
-                      }
-
-                      // Helper functions
-                      const getModeDisplayName = (mode: string) => {
-                        const modeNames = selectedLanguage === 'no' ? {
-                          'tasks': 'Oppgaveliste',
-                          'meeting': 'Møtenotater', 
-                          'article': 'Artikkel',
-                          'content-creator': 'Innholdsproduksjon'
-                        } : {
-                          'tasks': 'Task List',
-                          'meeting': 'Meeting Notes', 
-                          'article': 'Article',
-                          'content-creator': 'Content Creation'
-                        };
-                        return modeNames[mode as keyof typeof modeNames] || mode || 'Unknown';
-                      };
-
-                      const formatDate = (dateString: string) => {
-                        if (!dateString) return selectedLanguage === 'no' ? 'Ingen dato' : 'No date';
-                        
-                        try {
-                          const date = new Date(dateString);
-                          return date.toLocaleDateString(selectedLanguage === 'no' ? 'no-NO' : 'en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          });
-                        } catch (error) {
-                          return 'Invalid date';
-                        }
-                      };
-
-                      const getTitle = (record: TranscriptionRecord): string => {
-                        if (record.title && record.title !== 'Untitled') {
-                          return record.title;
-                        }
-                        const mode = getModeDisplayName(record.mode || 'unknown');
-                        const date = formatDate(record.createdAt);
-                        return `${mode} - ${date}`;
-                      };
-
-                      return (
-                        <div
-                          key={record.id || `record-${index}`}
-                          className="group bg-gray-50 rounded-lg p-4 hover:shadow-md hover:bg-gray-100 transition-all cursor-pointer"
-                          onClick={() => {
-                            if (!record.content) {
-                              alert(selectedLanguage === 'no' 
-                                ? 'Dette notatet har ikke noe innhold å vise' 
-                                : 'This memo has no content to display'
-                              );
-                              return;
-                            }
-                            
-                            setResults(record.content);
-                            setShowHistory(false);
-                            
-                            if (record.mode) {
-                              setBiographyType(record.mode as TranscriptionMode);
-                            }
-                            setCurrentStep('process');
-                          }}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <h3 className="text-sm font-medium text-gray-900 mb-1">
-                                {getTitle(record)}
-                              </h3>
-                              <p className="text-xs text-gray-500">
-                                {formatDate(record.createdAt)}
-                                {record.mode && ` • ${getModeDisplayName(record.mode)}`}
-                                {record.content ? 
-                                  ` • ${selectedLanguage === 'no' ? 'Klar til visning' : 'Ready to view'}` : 
-                                  ` • ${selectedLanguage === 'no' ? 'Ingen innhold' : 'No content'}`
-                                }
-                              </p>
-                            </div>
-                            <div className="text-gray-400">→</div>
-                          </div>
-                        </div>
-                      );
-                    }).filter(Boolean)}
-                  </div>
-                )}
-              </div>
-            </div>
+            <TranscriptionHistoryView
+              transcriptions={transcriptions}
+              selectedLanguage={selectedLanguage}
+              onSelectRecord={handleHistoryRecordSelect}
+            />
           ) : (
             // Show content when authenticated
             <div className="space-y-8">
@@ -862,7 +757,7 @@ function App() {
 
               {results && !isProcessing && (
                 <div id="results-section">
-                  {renderResults()}
+                  {renderResults}
                 </div>
               )}
             </div>
