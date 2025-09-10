@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle } from 'lucide-react';
+import { captureError, addBreadcrumb } from '../lib/sentry';
 
 interface Props {
   children: ReactNode;
@@ -25,6 +26,18 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error:', error, errorInfo);
+    
+    captureError(error, {
+      errorBoundary: true,
+      componentStack: errorInfo.componentStack,
+      errorBoundaryLocation: 'ErrorBoundary'
+    });
+
+    addBreadcrumb(
+      `Error boundary caught error: ${error.message}`,
+      'error-boundary',
+      'error'
+    );
   }
 
   public render() {
