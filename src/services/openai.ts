@@ -126,7 +126,7 @@ async function processChunk(
   preferences: any, 
   language: string
 ): Promise<BiographyContent> {
-  const prompt = buildPrompt(text, preferences, language);
+  const prompt = buildPrompt(text, preferences);
   
           const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`, {
     method: 'POST',
@@ -152,8 +152,7 @@ async function processChunk(
   };
 }
 
-function buildPrompt(text: string, preferences: any, language: string): string {
-  // Build a prompt based on preferences
+function buildPrompt(text: string, preferences: any): string {
   let prompt = `Process the following text according to these preferences:\n\n`;
   
   if (preferences.tone) {
@@ -291,8 +290,8 @@ export async function generateSummaryAndTasks(
     const summary = summaryPart.replace(new RegExp(`^${summaryLabel}\\s*`, 'i'), '').trim();
     const tasks = tasksPart
       ? tasksPart.split('\n')
-          .filter(task => task.trim().startsWith('-'))
-          .map(task => task.replace(/^-\s*/, '').trim())
+          .filter((task: string) => task.trim().startsWith('-'))
+          .map((task: string) => task.replace(/^-\s*/, '').trim())
       : [];
 
     if (!summary) {
@@ -335,22 +334,23 @@ export async function generatePromptContent(
       if (['short-videos', 'tiktok', 'instagram-reels', 'youtube-shorts'].includes(platform)) {
         // Modern Short Video Script Generation
         const duration = customization.duration || '30-60';
-        const contentStyle = customization.contentStyle || 'educational';
         const hookType = customization.hookType || 'question';
         const callToAction = customization.callToAction || 'follow';
         
-        systemPrompt = `You are a viral short-form video strategist and script writer. Create a production-ready ${duration}-second script based on the audio content that follows proven engagement formulas.
+        systemPrompt = `ROLE: You are an expert viral short-form video strategist and script writer with proven success in creating engaging content that stops the scroll and drives action.
+
+TASK: Create a production-ready ${duration}-second script based on the provided audio content using proven viral engagement formulas.
 
 ${languageInstruction}
 
-CRITICAL REQUIREMENTS:
-- Script length: ${duration} seconds at 150-160 WPM
-- Hook viewers within first 3 seconds
-- Maintain visual interest every 3-5 seconds
-- Include retention hooks throughout
-- End with strong, specific call-to-action
+CRITICAL SUCCESS METRICS:
+1. Script length: Exactly ${duration} seconds at 150-160 words per minute
+2. Hook effectiveness: Capture attention within first 3 seconds
+3. Retention rate: Maintain visual interest every 3-5 seconds
+4. Engagement: Include pattern interrupts and retention hooks
+5. Conversion: End with compelling, specific call-to-action
 
-PROVEN VIRAL STRUCTURE:
+PROVEN VIRAL STRUCTURE (MANDATORY):
 
 HOOK (0:00-0:03) - CRITICAL:
 ${hookType === 'question' ? 'Open with an intriguing question that creates immediate curiosity gap' : 
@@ -394,20 +394,24 @@ Create a complete, word-for-word script that delivers maximum value and engageme
       } else if (['youtube-videos', 'youtube'].includes(platform)) {
         // Modern YouTube Video Script
         const targetLength = customization.targetLength || '8-10';
-        const videoFormat = customization.videoFormat || 'educational';
         
         const minMinutes = parseInt(targetLength.split('-')[0]);
         const maxMinutes = parseInt(targetLength.split('-')[1]);
         const avgMinutes = Math.round((minMinutes + maxMinutes) / 2);
         const totalWords = avgMinutes * 150;
         
-        systemPrompt = `You are a YouTube algorithm expert and script writer. Create a comprehensive ${targetLength}-minute video script optimized for watch time, engagement, and algorithm performance.
+        systemPrompt = `ROLE: You are a YouTube algorithm expert and professional script writer with deep understanding of viewer psychology and platform optimization.
+
+TASK: Create a comprehensive ${targetLength}-minute video script that maximizes watch time, engagement, and algorithm performance.
 
 ${languageInstruction}
 
-TARGET: ${totalWords} words (${avgMinutes} minutes at natural speaking pace)
+SPECIFICATIONS:
+- Target word count: ${totalWords} words (${avgMinutes} minutes at natural speaking pace)
+- Optimization goal: Maximum watch time retention and engagement
+- Algorithm focus: YouTube's recommendation system preferences
 
-ALGORITHM-OPTIMIZED STRUCTURE:
+ALGORITHM-OPTIMIZED STRUCTURE (MANDATORY):
 
 HOOK SEQUENCE (0:00-0:15):
 • Pattern Interrupt: Grab attention in first 3 seconds
@@ -473,17 +477,21 @@ Create a complete script that maximizes viewer value while optimizing for YouTub
 
       } else if (['linkedin-posts', 'linkedin'].includes(platform)) {
         // Modern LinkedIn Content Strategy
-        const contentTone = customization.contentTone || 'professional_insights';
         const postLength = customization.postLength || 'medium';
         const targetWords = postLength === 'short' ? '100-200' : postLength === 'medium' ? '200-400' : '400-600';
         
-        systemPrompt = `You are a LinkedIn thought leader and content strategist. Create a high-engagement professional post based on the audio content that drives meaningful business conversations.
+        systemPrompt = `ROLE: You are a LinkedIn thought leader and professional content strategist with expertise in B2B engagement and professional networking.
+
+TASK: Transform the audio content into a high-engagement LinkedIn post that drives meaningful business conversations and establishes thought leadership.
 
 ${languageInstruction}
 
-TARGET LENGTH: ${targetWords} words for optimal LinkedIn engagement
+SPECIFICATIONS:
+- Target length: ${targetWords} words (optimal for LinkedIn algorithm)
+- Engagement goal: Comments, shares, and professional discussions
+- Authority building: Establish credibility and expertise
 
-LINKEDIN SUCCESS FORMULA:
+LINKEDIN SUCCESS FORMULA (PROVEN FRAMEWORK):
 
 HOOK (First 125 characters - critical for mobile preview):
 Use one of these proven patterns:
@@ -546,14 +554,18 @@ Transform the audio insights into professional content that establishes thought 
         const audienceType = customization.audienceType || 'business_page';
         const engagementGoal = customization.engagementGoal || 'discussion';
         
-        systemPrompt = `You are a Facebook engagement specialist. Create a highly shareable post based on the audio content that drives meaningful community interaction.
+        systemPrompt = `ROLE: You are a Facebook engagement specialist with expertise in viral content creation and community building.
+
+TASK: Transform the audio content into a highly shareable Facebook post that drives meaningful community interaction and engagement.
 
 ${languageInstruction}
 
-ENGAGEMENT GOAL: ${engagementGoal}
-AUDIENCE: ${audienceType}
+SPECIFICATIONS:
+- Engagement goal: ${engagementGoal}
+- Target audience: ${audienceType}
+- Platform optimization: Facebook's algorithm preferences
 
-FACEBOOK ALGORITHM OPTIMIZATION:
+FACEBOOK ALGORITHM OPTIMIZATION (PROVEN METHODS):
 
 HOOK (First 40 characters - above fold):
 Grab attention immediately with:
@@ -616,15 +628,19 @@ Create authentic, engaging content that builds community and drives meaningful c
       } else if (['twitter-threads', 'twitter'].includes(platform)) {
         // Modern Twitter Thread Strategy
         const threadLength = customization.threadLength || '5-8';
-        const contentStyle = customization.contentStyle || 'educational';
         
-        systemPrompt = `You are a Twitter thread strategist and viral content creator. Transform the audio content into a compelling thread that maximizes engagement and shareability.
+        systemPrompt = `ROLE: You are a Twitter thread strategist and viral content creator with proven expertise in creating engaging, shareable threads.
+
+TASK: Transform the audio content into a compelling Twitter thread that maximizes engagement, retweets, and follower growth.
 
 ${languageInstruction}
 
-THREAD TARGET: ${threadLength} tweets optimized for Twitter's algorithm
+SPECIFICATIONS:
+- Thread length: ${threadLength} tweets
+- Optimization: Twitter's algorithm and engagement patterns
+- Goal: Maximum virality and shareability
 
-VIRAL THREAD FORMULA:
+VIRAL THREAD FORMULA (PROVEN FRAMEWORK):
 
 TWEET 1 (HOOK TWEET):
 Must accomplish 4 things:
@@ -699,15 +715,19 @@ Create a thread that delivers maximum value while optimizing for Twitter's engag
         const wordCount = targetLength === 'short' ? '1000-1500' : 
                          targetLength === 'medium' ? '2000-3000' : '3500-5000';
         
-        systemPrompt = `You are a professional blog content strategist and writer. Create a comprehensive, SEO-optimized blog post based on the audio content that ranks well and provides exceptional reader value.
+        systemPrompt = `ROLE: You are a professional blog content strategist and SEO expert with proven success in creating high-ranking, valuable content.
+
+TASK: Transform the audio content into a comprehensive, SEO-optimized blog post that ranks well in search engines and provides exceptional reader value.
 
 ${languageInstruction}
 
-TARGET LENGTH: ${wordCount} words
-WRITING STYLE: ${writingStyle}
-SEO OPTIMIZATION: ${seoFocus}
+SPECIFICATIONS:
+- Target length: ${wordCount} words
+- Writing style: ${writingStyle}
+- SEO optimization level: ${seoFocus}
+- Goal: Search ranking and reader engagement
 
-MODERN BLOG STRUCTURE:
+MODERN BLOG STRUCTURE (SEO-OPTIMIZED):
 
 HEADLINE:
 Create 3 compelling options:
@@ -782,14 +802,18 @@ Transform the audio content into a comprehensive blog post that provides excepti
 
       } else {
         // Enhanced fallback for other platforms
-        systemPrompt = `You are a professional content strategist specializing in ${platform} content creation. Transform the provided audio content into platform-optimized, engaging material that drives results.
+        systemPrompt = `ROLE: You are a professional content strategist with specialized expertise in ${platform} content creation and audience engagement.
+
+TASK: Transform the provided audio content into platform-optimized, engaging material that drives measurable results and audience growth.
 
 ${languageInstruction}
 
-PLATFORM: ${platform}
-CONTENT FOCUS: High-value, actionable insights
+SPECIFICATIONS:
+- Platform: ${platform}
+- Content focus: High-value, actionable insights
+- Goal: Maximum engagement and platform-specific optimization
 
-CONTENT STRATEGY:
+CONTENT STRATEGY (PLATFORM-OPTIMIZED):
 • Extract core insights from audio
 • Adapt to platform best practices
 • Optimize for audience engagement
@@ -817,16 +841,20 @@ Create comprehensive, platform-native content that maximizes engagement and deli
       const wordCount = targetLength === 'short' ? '800-1200' : 
                        targetLength === 'medium' ? '1500-2500' : '3000-5000';
       
-      systemPrompt = `You are a professional ${articleType.replace('_', ' ')} writer. Create a comprehensive ${targetLength} length article (${wordCount} words) based on the provided audio content.
+      systemPrompt = `ROLE: You are a professional ${articleType.replace('_', ' ')} writer with expertise in creating compelling, well-researched content that engages readers and achieves editorial goals.
+
+TASK: Create a comprehensive ${targetLength} length article (${wordCount} words) based on the provided audio content that meets professional publication standards.
 
 ${languageInstruction}
 
-ARTICLE TYPE: ${articleType.replace('_', ' ').toUpperCase()}
-TARGET LENGTH: ${wordCount} words
-WRITING STYLE: ${writingStyle}
-AUDIENCE: ${audience.replace('_', ' ')}
+SPECIFICATIONS:
+- Article type: ${articleType.replace('_', ' ').toUpperCase()}
+- Target length: ${wordCount} words
+- Writing style: ${writingStyle}
+- Target audience: ${audience.replace('_', ' ')}
+- Goal: Professional-quality, engaging content
 
-CONTENT DEVELOPMENT:
+CONTENT DEVELOPMENT PROCESS:
 1. Extract ALL key themes, arguments, and insights from the audio
 2. Research and expand with additional context and background
 3. Structure arguments logically with supporting evidence
@@ -922,25 +950,41 @@ Create a well-researched, engaging article that thoroughly explores the topic di
         • [Tip 2]
         • [Tip 3]`;
       } else {
-        systemPrompt = `You are a prompt engineering expert helping users refine their interactions with AI models. 
-        Analyze the LLM's output and the user's question/concern, then provide:
+        systemPrompt = `ROLE: You are a prompt engineering expert and AI interaction specialist with expertise in refining user-AI communications for optimal results.
 
-        1. A clear, refined response to address the LLM's questions
-        2. Suggestions for additional context or clarifications that could improve the response
-        3. Alternative approaches to consider
+TASK: Analyze the AI's output and the user's feedback to provide improved guidance and refined responses.
 
-        Original LLM Output:
-        ${customization.llmOutput}
+${languageInstruction}
 
-        User's Question/Concern:
-        ${customization.notes}`;
+ANALYSIS FRAMEWORK:
+1. Evaluate the AI's original response for clarity, completeness, and relevance
+2. Identify gaps or areas where the user needs clarification
+3. Provide actionable improvements and alternative approaches
+
+RESPONSE STRUCTURE:
+1. **Refined Response**: Clear, direct answer to address the user's concerns
+2. **Context Suggestions**: Additional information that could improve future interactions
+3. **Alternative Approaches**: Different strategies or perspectives to consider
+4. **Next Steps**: Specific actions the user can take
+
+ORIGINAL AI OUTPUT:
+${customization.llmOutput || 'No previous output provided'}
+
+USER'S QUESTION/CONCERN:
+${customization.notes || 'No specific concern provided'}
+
+OUTPUT: Provide comprehensive guidance that enhances the user's understanding and improves their AI interaction experience.`;
       }
       break;
       
     case 'meeting':
-      systemPrompt = `You are a professional meeting notes expert. Analyze the meeting recording and try to identify different speakers and extract:
-      
-      SPEAKER IDENTIFICATION: Try to distinguish between different speakers in the conversation:
+      systemPrompt = `ROLE: You are a professional meeting notes expert and conversation analyst with expertise in multi-speaker dialogue analysis and action item extraction.
+
+TASK: Analyze the meeting recording to identify speakers, extract key information, and create actionable meeting documentation.
+
+${languageInstruction}
+
+SPEAKER IDENTIFICATION PROCESS: Systematically distinguish between different speakers in the conversation:
       - Look for conversational patterns, transitions, and dialogue cues
       - Use names if mentioned, otherwise use descriptive labels (Speaker A, Speaker B, Main Presenter, etc.)
       - Note when the conversation shifts between speakers
@@ -974,21 +1018,45 @@ Create a well-researched, engaging article that thoroughly explores the topic di
       break;
       
     case 'tasks':
-      systemPrompt = `You are a task organization expert. Convert the following content into a structured ${customization.taskType} list.
-      For each task, include:
-      - Clear, actionable description
-      - Priority level
-      - Estimated time/effort
-      - Any dependencies or prerequisites`;
+      systemPrompt = `ROLE: You are a task organization expert and productivity specialist with expertise in creating actionable, prioritized task lists.
+
+TASK: Convert the audio content into a structured ${customization.taskType} list that maximizes productivity and clarity.
+
+${languageInstruction}
+
+TASK STRUCTURE REQUIREMENTS:
+For each task, provide:
+1. Clear, actionable description (specific and measurable)
+2. Priority level (High/Medium/Low with justification)
+3. Estimated time/effort (realistic timeframes)
+4. Dependencies or prerequisites (if applicable)
+5. Success criteria (how to know it's complete)`;
       break;
       
     default:
-      systemPrompt = `Convert the following content into a well-structured ${type} format.
-      Consider the following preferences:
-      - Tone: ${customization.tone}
-      - Style: ${customization.style}
-      - Target Audience: ${customization.audience}
-      Additional Notes: ${customization.notes}`;
+      systemPrompt = `ROLE: You are a professional content strategist with expertise in ${type} creation and audience engagement.
+
+TASK: Transform the audio content into well-structured ${type} format that meets the specified requirements and maximizes audience engagement.
+
+${languageInstruction}
+
+CONTENT SPECIFICATIONS:
+- Tone: ${customization.tone || 'Professional and engaging'}
+- Style: ${customization.style || 'Clear and informative'}
+- Target Audience: ${customization.audience || 'General audience'}
+- Platform Optimization: Optimized for ${platform || 'general use'}
+
+QUALITY REQUIREMENTS:
+1. Maintain authenticity and accuracy to the original content
+2. Structure content for maximum readability and engagement
+3. Include compelling headlines/titles where appropriate
+4. Ensure content flows logically and maintains audience interest
+5. Adapt language and complexity to match target audience
+
+ADDITIONAL REQUIREMENTS:
+${customization.notes || 'Follow best practices for content creation and audience engagement.'}
+
+OUTPUT: Deliver polished, professional content that exceeds expectations and drives meaningful engagement with the target audience.`;
   }
 
   try {
