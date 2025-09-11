@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { captureError, addBreadcrumb } from '../lib/sentry';
 
 interface ErrorState {
   message: string;
@@ -25,6 +26,20 @@ export const useErrorHandler = () => {
       stack: error.stack,
       code: error.code
     });
+
+    if (error instanceof Error) {
+      captureError(error, {
+        errorCode: (error as any).code,
+        hasRetry: !!retryFn,
+        component: 'useErrorHandler'
+      });
+    }
+
+    addBreadcrumb(
+      `Error occurred: ${errorMessage}`,
+      'error',
+      'error'
+    );
   }, []);
 
   const clearError = useCallback(() => {
@@ -53,4 +68,4 @@ export const useErrorHandler = () => {
     clearError,
     retryOperation
   };
-}; 
+};    

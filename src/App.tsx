@@ -22,6 +22,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import ErrorMessage from './components/ErrorMessage';
 import { TranscriptionMode, BiographyPreferences, DraftTranscription, TranscriptionRecord } from './types';
 import { SearchBar } from './components/SearchBar';
+import { setUserContext, addBreadcrumb } from './lib/sentry';
 
 // Add translation function
 const getTranslations = (language: string) => {
@@ -90,6 +91,21 @@ function App() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
   const [showFAQ, setShowFAQ] = useState(false);
+
+  // Refs for auto-scrolling (currently unused but reserved for future scroll optimization)
+  // const stepWizardRef = useRef<HTMLDivElement>(null);
+  // const processingRef = useRef<HTMLDivElement>(null);
+  // const resultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (user) {
+      setUserContext({
+        id: user.id,
+        email: user.email
+      });
+      addBreadcrumb(`User logged in: ${user.email}`, 'auth', 'info');
+    }
+  }, [user]);
 
   if (showFAQ) {
     return <FAQ language={selectedLanguage} onClose={() => setShowFAQ(false)} />;
