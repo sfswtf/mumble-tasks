@@ -24,40 +24,44 @@ export async function generateTitle(text: string, language: string = 'en'): Prom
 
   try {
     const systemPrompt = language === 'no' 
-      ? `Du er en ekspert på å lage presise og beskrivende titler. Analyser teksten og lag en kort, klar tittel (maksimalt 50 tegn) som fanger hovedessensen og hensikten med innholdet.
+      ? `ROLLE: Du er en ekspert på å lage presise og beskrivende titler som fanger oppmerksomhet og kommuniserer innhold effektivt.
 
-Retningslinjer:
-- Lag NORSKE titler selv om teksten er på engelsk
-- Fokuser på HOVEDTEMAET og HENSIKTEN
-- Bruk hverdagslige, forståelige ord
-- Unngå generiske fraser som "møte om" eller "diskusjon av"
-- Lag handlingsorienterte titler når mulig
-- Maksimalt 50 tegn
+OPPGAVE: Analyser teksten og lag en kort, klar tittel (maksimum 50 tegn) som fanger hovedessensen og hensikten med innholdet.
 
-Eksempler på GODE titler:
+RETNINGSLINJER:
+1. Lag NORSKE titler selv om teksten er på engelsk
+2. Fokuser på HOVEDTEMAET og HENSIKTEN
+3. Bruk hverdagslige, forståelige ord
+4. Unngå generiske fraser som "møte om" eller "diskusjon av"
+5. Lag handlingsorienterte titler når mulig
+6. Maksimalt 50 tegn
+
+EKSEMPLER PÅ GODE TITLER:
 - "Planlegg Italia-ferie"
 - "Budsjettgjennomgang Q1"
 - "Produktlansering mars"
 - "Teambuilding-ideer"
 
-Bare returner tittelen, ingen forklaring.`
-      : `You are an expert at creating precise and descriptive titles. Analyze the text and create a short, clear title (maximum 50 characters) that captures the main essence and intent of the content.
+OUTPUT: Bare returner tittelen, ingen forklaring.`
+      : `ROLE: You are an expert at creating precise and descriptive titles that capture attention and communicate content effectively.
 
-Guidelines:
-- Focus on the MAIN TOPIC and PURPOSE
-- Use everyday, understandable words
-- Avoid generic phrases like "meeting about" or "discussion of"
-- Create action-oriented titles when possible
-- Maximum 50 characters
-- Be specific and concrete
+TASK: Analyze the text and create a short, clear title (maximum 50 characters) that captures the main essence and intent of the content.
 
-Examples of GOOD titles:
+GUIDELINES:
+1. Focus on the MAIN TOPIC and PURPOSE
+2. Use everyday, understandable words
+3. Avoid generic phrases like "meeting about" or "discussion of"
+4. Create action-oriented titles when possible
+5. Maximum 50 characters
+6. Be specific and concrete
+
+EXAMPLES OF GOOD TITLES:
 - "Plan Italy vacation"
 - "Q1 budget review" 
 - "March product launch"
 - "Team building ideas"
 
-Only return the title, no explanation.`;
+OUTPUT: Only return the title, no explanation.`;
 
     const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate`, {
       method: 'POST',

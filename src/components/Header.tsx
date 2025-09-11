@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileAudio, LogOut, User, Globe } from 'lucide-react';
+import { LogOut, User, Globe, HelpCircle } from 'lucide-react';
 import type { User as UserType } from '../types';
 
 interface LanguageSelectorProps {
@@ -70,14 +70,16 @@ const getTranslations = (language: string) => {
       subtitle: 'What are you talking about?',
       signIn: 'Sign In',
       signOut: 'Sign Out',
-      profile: 'Profile'
+      profile: 'Profile',
+      help: 'Help & FAQ'
     },
     no: {
       title: 'Mumble Tasks',
       subtitle: 'Hva snakker du om?',
       signIn: 'Logg Inn',
       signOut: 'Logg Ut',
-      profile: 'Profil'
+      profile: 'Profil',
+      help: 'Hjelp & FAQ'
     }
   };
   return translations[language as keyof typeof translations] || translations.en;
@@ -90,6 +92,7 @@ interface HeaderProps {
   language: string;
   onLanguageChange: (language: string) => void;
   onNavigateHome: () => void;
+  onShowFAQ: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -98,10 +101,10 @@ const Header: React.FC<HeaderProps> = ({
   onSignOut, 
   language, 
   onLanguageChange, 
-  onNavigateHome
+  onNavigateHome,
+  onShowFAQ
 }) => {
   const t = getTranslations(language);
-  const [isLogoHovered, setIsLogoHovered] = useState(false);
 
   const handleLanguageChange = (lang: string) => {
     onLanguageChange(lang);
@@ -119,8 +122,6 @@ const Header: React.FC<HeaderProps> = ({
           <div 
             className="flex items-center cursor-pointer transition-all duration-200 hover:opacity-90 min-w-0 flex-1"
             onClick={onNavigateHome}
-            onMouseEnter={() => setIsLogoHovered(true)}
-            onMouseLeave={() => setIsLogoHovered(false)}
             aria-label="Go to home page"
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && onNavigateHome()}
@@ -166,6 +167,16 @@ const Header: React.FC<HeaderProps> = ({
 
           {/* Right side controls */}
           <div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0">
+            {/* Help/FAQ Button */}
+            <button
+              onClick={onShowFAQ}
+              className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 touch-manipulation"
+              aria-label={t.help}
+            >
+              <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
+              <span className="hidden sm:inline text-xs sm:text-sm font-medium text-gray-700">{t.help}</span>
+            </button>
+            
             {/* Language Selector - always visible */}
             <LanguageSelector 
               selectedLanguage={language} 

@@ -13,6 +13,7 @@ import BiographyCustomization from './components/BiographyCustomization';
 import ModeIndicator from './components/ModeIndicator';
 import StepProgressIndicator from './components/StepProgressIndicator';
 import { TranscriptionHistoryView } from './components/TranscriptionHistoryView';
+import FAQ from './components/FAQ';
 import { transcribeAudio, generatePromptContent, generateSummaryAndTasks } from './services/openai';
 import { v4 as uuidv4 } from 'uuid';
 import { generateTitle } from './utils/titleGenerator';
@@ -29,13 +30,17 @@ const getTranslations = (language: string) => {
       searchPlaceholder: 'Search your memos...',
       newMemo: 'New Memo',
       viewHistory: 'View History',
-      hideHistory: 'Hide History'
+      hideHistory: 'Hide History',
+      faqTitle: 'Help & FAQ',
+      backToApp: 'Back to App'
     },
     no: {
       searchPlaceholder: 'Søk i notatene dine...',
       newMemo: 'Nytt Notat',
       viewHistory: 'Vis Historikk',
-      hideHistory: 'Skjul Historikk'
+      hideHistory: 'Skjul Historikk',
+      faqTitle: 'Hjelp & FAQ',
+      backToApp: 'Tilbake til App'
     }
   };
   return translations[language as keyof typeof translations] || translations.en;
@@ -84,7 +89,11 @@ function App() {
   const [searchResults, setSearchResults] = useState<Array<{ id: string; title: string; type: string; createdAt: string }>>([]);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
+  const [showFAQ, setShowFAQ] = useState(false);
 
+  if (showFAQ) {
+    return <FAQ language={selectedLanguage} onClose={() => setShowFAQ(false)} />;
+  }
   // Global error handler
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
@@ -302,7 +311,7 @@ function App() {
         };
 
         setResults(result);
-        const savedRecord = await saveTranscription({
+        await saveTranscription({
           id: result.id,
           userId: user.id,
           transcription,
@@ -360,7 +369,7 @@ function App() {
           enhancedTitle = `${platformName} - ${result.title}`;
         }
         
-        const savedRecord = await saveTranscription({
+        await saveTranscription({
           id: result.id,
           userId: user.id,
           transcription,
@@ -400,7 +409,7 @@ function App() {
         };
 
         setResults(result);
-        const savedRecord = await saveTranscription({
+        await saveTranscription({
           id: result.id,
           userId: user.id,
           transcription,
@@ -621,6 +630,7 @@ function App() {
         language={selectedLanguage}
         onLanguageChange={handleLanguageChange}
         onNavigateHome={handleNewTranscription}
+        onShowFAQ={() => setShowFAQ(true)}
       />
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl min-h-screen">
