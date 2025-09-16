@@ -169,10 +169,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0">
             {/* Help/FAQ Button */}
             <button
-              onClick={() => {
-                console.log('🖱️ FAQ Button clicked!');
-                onShowFAQ();
-              }}
+              onClick={onShowFAQ}
               className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 touch-manipulation"
               aria-label={t.help}
             >

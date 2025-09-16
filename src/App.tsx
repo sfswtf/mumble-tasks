@@ -113,10 +113,6 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Debug logging for FAQ state
-  useEffect(() => {
-    console.log('FAQ State Changed:', showFAQ);
-  }, [showFAQ]);
 
   // Refs for auto-scrolling (currently unused but reserved for future scroll optimization)
   // const stepWizardRef = useRef<HTMLDivElement>(null);

@@ -421,20 +421,14 @@ const getFAQTranslations = (language: string) => {
 };
 
 const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
-  console.log('🚀 FAQ Component Loading...', { language });
-  
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['gettingStarted']));
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['gettingStarted-0', 'gettingStarted-1']));
   
   const t = getFAQTranslations(language);
   
-  // Debug logging
-  console.log('✅ FAQ Component Rendered:', { language, sections: Object.keys(t?.sections || {}), hasTitle: !!t?.title });
-  
   // Safety check - if no sections, show basic content
   if (!t || !t.sections || Object.keys(t.sections).length === 0) {
-    console.error('❌ FAQ translations not loaded properly:', t);
     return (
       <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
         <div className="text-center">
