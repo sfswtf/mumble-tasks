@@ -14,6 +14,8 @@ const getTranslations = (language: string) => {
   const translations = {
     en: {
       welcomeBack: 'Welcome',
+      quickStart: 'Transform your voice recordings into professional content with AI',
+      quickStartDetails: 'Record or upload audio → Choose content type (Tasks, Articles, Meeting Notes, Social Media) → Get intelligent, structured results in seconds',
       email: 'Email',
       password: 'Password',
       signIn: 'Sign In',
@@ -25,6 +27,8 @@ const getTranslations = (language: string) => {
     },
     no: {
       welcomeBack: 'Velkommen',
+      quickStart: 'Transformer lydopptak til profesjonelt innhold med AI',
+      quickStartDetails: 'Ta opp eller last opp lyd → Velg innholdstype (Oppgaver, Artikler, Møtenotater, Sosiale Medier) → Få intelligente, strukturerte resultater på sekunder',
       email: 'E-post',
       password: 'Passord',
       signIn: 'Logg Inn',
@@ -153,6 +157,16 @@ export default function AuthModal({ isOpen, onClose, onAuth, language }: AuthMod
             <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">
               {t.welcomeBack}
             </h2>
+
+            {/* Quick Start Description */}
+            <div className="mb-4 sm:mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-sm font-semibold text-blue-800 mb-2">
+                {t.quickStart}
+              </h3>
+              <p className="text-xs text-blue-700 leading-relaxed">
+                {t.quickStartDetails}
+              </p>
+            </div>
 
             {/* Error Message Inside Modal */}
             {error && (

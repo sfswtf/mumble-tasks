@@ -125,7 +125,7 @@ const getFAQTranslations = (language: string) => {
             },
             {
               question: 'Can I preview the AI instructions?',
-              answer: 'Yes! Mumble includes a Prompt Preview feature that shows you exactly what instructions are being sent to the AI. This transparency helps you understand how your customizations affect the output and builds trust in the process.'
+              answer: 'No, the AI instructions are not visible to users. This keeps the application simple and focused on results rather than technical details.'
             },
             {
               question: 'How do platform-specific optimizations work?',
@@ -335,7 +335,7 @@ const getFAQTranslations = (language: string) => {
             },
             {
               question: 'Kan jeg forhåndsvise AI-instruksjonene?',
-              answer: 'Ja! Mumble inkluderer en Prompt Preview-funksjon som viser deg nøyaktig hvilke instruksjoner som sendes til AI-en. Denne åpenheten hjelper deg å forstå hvordan tilpasningene påvirker utdataene.'
+              answer: 'Nei, AI-instruksjonene er ikke synlige for brukere. Dette holder applikasjonen enkel og fokusert på resultater fremfor tekniske detaljer.'
             }
           ]
         },
