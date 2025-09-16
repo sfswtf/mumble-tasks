@@ -51,11 +51,11 @@ const getFAQTranslations = (language: string) => {
             },
             {
               question: 'How do I use Mumble Tasks?',
-              answer: 'Using Mumble is simple: 1) Choose your content type (Tasks, Meeting Notes, Article, Content Creator, or Biography), 2) Select your language (English or Norwegian), 3) Record audio or upload a file, 4) Customize the output settings, 5) Let AI process and generate your content. The entire process takes just a few minutes!'
+              answer: 'Using Mumble is simple: 1) Choose your content type (Tasks, Meeting Notes, Article, or Content Creator), 2) Select your language (English or Norwegian), 3) Record audio or upload a file, 4) Customize the output settings, 5) Let AI process and generate your content. The entire process takes just a few minutes!'
             },
             {
               question: 'Do I need an account to use Mumble?',
-              answer: 'Yes, you need to sign in to save your transcriptions and access all features. This allows you to view your history, export documents, and maintain your work across sessions. For testing, you can use: alfa@test1.no / 123456'
+              answer: 'Yes, you need to sign in to save your transcriptions and access all features. This allows you to view your history, export documents, and maintain your work across sessions. Click "Request Access" on the login screen to get your account.'
             },
             {
               question: 'Is Mumble free to use?',
@@ -86,10 +86,6 @@ const getFAQTranslations = (language: string) => {
             {
               question: 'Tell me about Content Creator Mode',
               answer: 'Content Creator Mode generates platform-specific social media content. Choose from TikTok/Instagram Reels (15-90 seconds), YouTube videos (7-11 minutes), LinkedIn posts (1-3 minute read), Facebook posts, Twitter threads, or blog posts. Each is optimized for the platform\'s best practices.'
-            },
-            {
-              question: 'What is Biography Mode used for?',
-              answer: 'Biography Mode creates personal stories and biographical content from spoken memories. It organizes life experiences into compelling narrative formats, perfect for preserving family stories, creating personal memoirs, or documenting important life events.'
             }
           ]
         },
@@ -277,11 +273,11 @@ const getFAQTranslations = (language: string) => {
             },
             {
               question: 'Hvordan bruker jeg Mumble Tasks?',
-              answer: 'Å bruke Mumble er enkelt: 1) Velg innholdstype (Oppgaver, Møtenotater, Artikkel, Innholdsskaper eller Biografi), 2) Velg språk (engelsk eller norsk), 3) Ta opp lyd eller last opp fil, 4) Tilpass utgangsinnstillinger, 5) La AI behandle og generere innholdet ditt. Hele prosessen tar bare noen få minutter!'
+              answer: 'Å bruke Mumble er enkelt: 1) Velg innholdstype (Oppgaver, Møtenotater, Artikkel eller Innholdsskaper), 2) Velg språk (engelsk eller norsk), 3) Ta opp lyd eller last opp fil, 4) Tilpass utgangsinnstillinger, 5) La AI behandle og generere innholdet ditt. Hele prosessen tar bare noen få minutter!'
             },
             {
               question: 'Trenger jeg en konto for å bruke Mumble?',
-              answer: 'Ja, du må logge inn for å lagre transkripsjoner og få tilgang til alle funksjoner. Dette lar deg se historikken din, eksportere dokumenter og opprettholde arbeidet på tvers av økter. For testing kan du bruke: alfa@test1.no / 123456'
+              answer: 'Ja, du må logge inn for å lagre transkripsjoner og få tilgang til alle funksjoner. Dette lar deg se historikken din, eksportere dokumenter og opprettholde arbeidet på tvers av økter. Klikk "Be om tilgang" på påloggingsskjermen for å få din konto.'
             },
             {
               question: 'Er Mumble gratis å bruke?',

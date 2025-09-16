@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Settings, Palette, Users, FileText, MessageSquare } from 'lucide-react';
-import PromptPreview from './PromptPreview';
 import { BiographyPreferences } from '../types';
 import { Tooltip } from './Tooltip';
 import { ShortVideoCustomization } from './ShortVideoCustomization';
@@ -188,7 +187,6 @@ export default function BiographyCustomization({ onCustomize, selectedType, plat
     promptMode: 'initial',
     platform: platform
   });
-  const [showPromptPreview, setShowPromptPreview] = useState(false);
   const [previewPrompt, setPreviewPrompt] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -711,12 +709,6 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6"
     >
-      <PromptPreview
-        prompt={previewPrompt}
-        language={language || 'en'}
-        isVisible={showPromptPreview}
-        onToggle={() => setShowPromptPreview(!showPromptPreview)}
-      />
       
       <h2 className="text-2xl font-semibold text-center mb-6">{translations.title}</h2>
 
