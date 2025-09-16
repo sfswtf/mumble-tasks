@@ -14,8 +14,8 @@ const getTranslations = (language: string) => {
   const translations = {
     en: {
       welcomeBack: 'Welcome',
-      quickStart: 'Transform your voice recordings into professional content with AI',
-      quickStartDetails: 'Record or upload audio → Choose content type (Tasks, Articles, Meeting Notes, Social Media) → Get intelligent, structured results in seconds',
+      quickStart: '🎯 How Mumble Works',
+      quickStartDetails: '🎤 Record audio  •  📝 Pick content type  •  ⚡ Get results instantly',
       email: 'Email',
       password: 'Password',
       signIn: 'Sign In',
@@ -27,8 +27,8 @@ const getTranslations = (language: string) => {
     },
     no: {
       welcomeBack: 'Velkommen',
-      quickStart: 'Transformer lydopptak til profesjonelt innhold med AI',
-      quickStartDetails: 'Ta opp eller last opp lyd → Velg innholdstype (Oppgaver, Artikler, Møtenotater, Sosiale Medier) → Få intelligente, strukturerte resultater på sekunder',
+      quickStart: '🎯 Slik fungerer Mumble',
+      quickStartDetails: '🎤 Ta opp lyd  •  📝 Velg innholdstype  •  ⚡ Få resultater øyeblikkelig',
       email: 'E-post',
       password: 'Passord',
       signIn: 'Logg Inn',
@@ -158,16 +158,6 @@ export default function AuthModal({ isOpen, onClose, onAuth, language }: AuthMod
               {t.welcomeBack}
             </h2>
 
-            {/* Quick Start Description */}
-            <div className="mb-4 sm:mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="text-sm font-semibold text-blue-800 mb-2">
-                {t.quickStart}
-              </h3>
-              <p className="text-xs text-blue-700 leading-relaxed">
-                {t.quickStartDetails}
-              </p>
-            </div>
-
             {/* Error Message Inside Modal */}
             {error && (
               <motion.div
@@ -241,6 +231,16 @@ export default function AuthModal({ isOpen, onClose, onAuth, language }: AuthMod
               >
                 {t.requestAccess}
               </button>
+            </div>
+
+            {/* Quick Start Description - Moved below buttons */}
+            <div className="mt-4 sm:mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+              <h3 className="text-sm font-semibold text-blue-800 mb-2 text-center">
+                {t.quickStart}
+              </h3>
+              <p className="text-xs text-blue-700 text-center font-medium">
+                {t.quickStartDetails}
+              </p>
             </div>
           </motion.div>
         </motion.div>

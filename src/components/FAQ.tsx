@@ -567,6 +567,43 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
 
             {/* Content */}
             <div className="p-6">
+              {/* Quick Start Guide - Moved to top */}
+              <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <Zap className="w-5 h-5 mr-2 text-blue-600" />
+                  {uiT.quickStartGuide}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
+                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full text-blue-600 font-semibold text-sm">
+                      1
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-800">{uiT.chooseMode}</div>
+                      <div className="text-sm text-gray-600">{uiT.selectContentType}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
+                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full text-blue-600 font-semibold text-sm">
+                      2
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-800">{uiT.recordAudio}</div>
+                      <div className="text-sm text-gray-600">{uiT.uploadOrRecord}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
+                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full text-blue-600 font-semibold text-sm">
+                      3
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-800">{uiT.getResults}</div>
+                      <div className="text-sm text-gray-600">{uiT.aiGeneratesContent}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-6">
                 {Object.entries(filteredSections).map(([sectionKey, section]) => (
                   <motion.div
@@ -657,43 +694,6 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
                     </AnimatePresence>
                   </motion.div>
                 ))}
-              </div>
-
-              {/* Quick Actions */}
-              <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                  <Zap className="w-5 h-5 mr-2 text-blue-600" />
-                  {uiT.quickStartGuide}
-                  </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg">
-                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full text-blue-600 font-semibold text-sm">
-                      1
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-800">{uiT.chooseMode}</div>
-                      <div className="text-sm text-gray-600">{uiT.selectContentType}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg">
-                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full text-blue-600 font-semibold text-sm">
-                      2
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-800">{uiT.recordAudio}</div>
-                      <div className="text-sm text-gray-600">{uiT.uploadOrRecord}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg">
-                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full text-blue-600 font-semibold text-sm">
-                      3
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-800">{uiT.getResults}</div>
-                      <div className="text-sm text-gray-600">{uiT.aiGeneratesContent}</div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Contact Support */}
