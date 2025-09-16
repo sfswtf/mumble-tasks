@@ -92,6 +92,27 @@ function App() {
   const [resetKey, setResetKey] = useState(0);
   const [showFAQ, setShowFAQ] = useState(false);
   
+  // Handle URL-based routing for FAQ
+  useEffect(() => {
+    if (window.location.pathname === '/faq') {
+      setShowFAQ(true);
+    }
+  }, []);
+
+  // Listen for browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      if (window.location.pathname === '/faq') {
+        setShowFAQ(true);
+      } else {
+        setShowFAQ(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Debug logging for FAQ state
   useEffect(() => {
     console.log('FAQ State Changed:', showFAQ);
@@ -113,7 +134,10 @@ function App() {
   }, [user]);
 
   if (showFAQ) {
-    return <FAQ language={selectedLanguage} onClose={() => setShowFAQ(false)} />;
+    return <FAQ language={selectedLanguage} onClose={() => {
+      setShowFAQ(false);
+      window.history.pushState({}, '', '/');
+    }} />;
   }
   // Global error handler
   useEffect(() => {
@@ -461,9 +485,13 @@ function App() {
     
     // Clear all results and files immediately
     setShowHistory(false);
+    setShowFAQ(false);
     setResults(null);
     setSelectedFile(null);
     setError(null);
+    
+    // Navigate to home URL
+    window.history.pushState({}, '', '/');
     
     // Reset to initial state completely
     setCurrentStep('mode');
@@ -651,7 +679,10 @@ function App() {
         language={selectedLanguage}
         onLanguageChange={handleLanguageChange}
         onNavigateHome={handleNewTranscription}
-        onShowFAQ={() => setShowFAQ(true)}
+        onShowFAQ={() => {
+          setShowFAQ(true);
+          window.history.pushState({}, '', '/faq');
+        }}
       />
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl min-h-screen">
