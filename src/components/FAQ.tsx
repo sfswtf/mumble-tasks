@@ -4,10 +4,7 @@ import {
   ArrowLeft, 
   Mic, 
   FileText, 
-  Users, 
-  MessageSquare, 
   Settings, 
-  Upload, 
   Download,
   AlertCircle,
   CheckCircle,
@@ -15,11 +12,9 @@ import {
   Lightbulb,
   ChevronDown,
   ChevronUp,
-  Play,
   Zap,
   Shield,
-  Globe,
-  Smartphone
+  Globe
 } from 'lucide-react';
 
 interface FAQProps {
@@ -427,10 +422,13 @@ const getFAQTranslations = (language: string) => {
 
 const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['gettingStarted']));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['gettingStarted-0', 'gettingStarted-1']));
   
   const t = getFAQTranslations(language);
+  
+  // Debug logging
+  console.log('FAQ Component Rendered:', { language, sections: Object.keys(t?.sections || {}), hasTitle: !!t?.title });
 
   const sectionIcons = {
     gettingStarted: <Lightbulb className="w-5 h-5" />,
@@ -465,7 +463,7 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
   };
 
   // Filter sections and items based on search term
-  const filteredSections = Object.entries(t.sections).reduce((acc, [sectionKey, section]) => {
+  const filteredSections = Object.entries(t?.sections || {}).reduce((acc, [sectionKey, section]) => {
     const filteredContent = section.content.filter(item =>
       item.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.answer.toLowerCase().includes(searchTerm.toLowerCase())
