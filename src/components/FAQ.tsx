@@ -421,6 +421,8 @@ const getFAQTranslations = (language: string) => {
 };
 
 const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
+  console.log('🚀 FAQ Component Loading...', { language });
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['gettingStarted']));
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['gettingStarted-0', 'gettingStarted-1']));
@@ -428,7 +430,23 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
   const t = getFAQTranslations(language);
   
   // Debug logging
-  console.log('FAQ Component Rendered:', { language, sections: Object.keys(t?.sections || {}), hasTitle: !!t?.title });
+  console.log('✅ FAQ Component Rendered:', { language, sections: Object.keys(t?.sections || {}), hasTitle: !!t?.title });
+  
+  // Safety check - if no sections, show basic content
+  if (!t || !t.sections || Object.keys(t.sections).length === 0) {
+    console.error('❌ FAQ translations not loaded properly:', t);
+    return (
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Help & FAQ</h1>
+          <p className="mb-4">Loading FAQ content...</p>
+          <button onClick={onClose} className="px-4 py-2 bg-blue-600 text-white rounded-lg">
+            Back to App
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const sectionIcons = {
     gettingStarted: <Lightbulb className="w-5 h-5" />,
