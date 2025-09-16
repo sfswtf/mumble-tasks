@@ -129,12 +129,6 @@ function App() {
     }
   }, [user]);
 
-  if (showFAQ) {
-    return <FAQ language={selectedLanguage} onClose={() => {
-      setShowFAQ(false);
-      window.history.pushState({}, '', '/');
-    }} />;
-  }
   // Global error handler
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
@@ -665,6 +659,13 @@ function App() {
     }
     setCurrentStep('process');
   }, []);
+
+  if (showFAQ) {
+    return <FAQ language={selectedLanguage} onClose={() => {
+      setShowFAQ(false);
+      window.history.pushState({}, '', '/');
+    }} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
