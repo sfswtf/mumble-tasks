@@ -91,6 +91,11 @@ function App() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
   const [showFAQ, setShowFAQ] = useState(false);
+  
+  // Debug logging for FAQ state
+  useEffect(() => {
+    console.log('FAQ State Changed:', showFAQ);
+  }, [showFAQ]);
 
   // Refs for auto-scrolling (currently unused but reserved for future scroll optimization)
   // const stepWizardRef = useRef<HTMLDivElement>(null);
