@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Palette, Users, FileText, List, MessageSquare, ArrowRight } from 'lucide-react';
+import { Settings, Palette, Users, FileText, MessageSquare } from 'lucide-react';
+import PromptPreview from './PromptPreview';
 import { BiographyPreferences } from '../types';
 import { Tooltip } from './Tooltip';
 import { ShortVideoCustomization } from './ShortVideoCustomization';
@@ -187,11 +188,86 @@ export default function BiographyCustomization({ onCustomize, selectedType, plat
     promptMode: 'initial',
     platform: platform
   });
+  const [showPromptPreview, setShowPromptPreview] = useState(false);
+  const [previewPrompt, setPreviewPrompt] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onCustomize(preferences);
   };
+
+  const generatePreviewPrompt = () => {
+    const languageInstruction = language === 'no' 
+      ? 'VIKTIG: Skriv ALT innhold på NORSK. Selv om lydfilen er på engelsk, skal ALT output være på norsk.'
+      : 'Write all content in English.';
+    
+    let prompt = '';
+    
+    if (selectedType === 'content-creator' && platform) {
+      if (['short-videos', 'tiktok', 'instagram-reels', 'youtube-shorts'].includes(platform)) {
+        const duration = preferences.duration || '30-60';
+        
+        prompt = `ROLE: You are an expert viral short-form video strategist and script writer with proven success in creating engaging content that stops the scroll and drives action.
+
+TASK: Create a production-ready ${duration}-second script based on the provided audio content using proven viral engagement formulas.
+
+${languageInstruction}
+
+CRITICAL SUCCESS METRICS:
+1. Script length: Exactly ${duration} seconds at 150-160 words per minute
+2. Hook effectiveness: Capture attention within first 3 seconds
+3. Retention rate: Maintain visual interest every 3-5 seconds
+4. Engagement: Include pattern interrupts and retention hooks
+5. Conversion: End with compelling, specific call-to-action
+
+Custom user instructions: ${preferences.notes || 'None provided'}`;
+      } else if (['youtube-videos', 'youtube'].includes(platform)) {
+        const targetLength = preferences.targetLength || '8-10';
+        prompt = `ROLE: You are a YouTube algorithm expert and professional script writer with deep understanding of viewer psychology and platform optimization.
+
+TASK: Create a comprehensive ${targetLength}-minute video script that maximizes watch time, engagement, and algorithm performance.
+
+${languageInstruction}
+
+Custom user instructions: ${preferences.notes || 'None provided'}`;
+      }
+    } else if (selectedType === 'tasks') {
+      prompt = `ROLE: You are a task organization expert and productivity specialist with expertise in creating actionable, prioritized task lists.
+
+TASK: Convert the audio content into a structured task list that maximizes productivity and clarity.
+
+${languageInstruction}
+
+Custom user instructions: ${preferences.notes || 'None provided'}`;
+    } else if (selectedType === 'meeting') {
+      prompt = `ROLE: You are a professional meeting notes expert and conversation analyst with expertise in multi-speaker dialogue analysis and action item extraction.
+
+TASK: Analyze the meeting recording to identify speakers, extract key information, and create actionable meeting documentation.
+
+${languageInstruction}
+
+Custom user instructions: ${preferences.notes || 'None provided'}`;
+    } else {
+      prompt = `ROLE: You are a professional content strategist with expertise in ${selectedType} creation and audience engagement.
+
+TASK: Transform the audio content into well-structured ${selectedType} format that meets the specified requirements.
+
+${languageInstruction}
+
+SPECIFICATIONS:
+- Tone: ${preferences.tone || 'Professional'}
+- Style: ${preferences.style || 'Informative'}
+- Target Audience: ${preferences.audience || 'General audience'}
+
+Custom user instructions: ${preferences.notes || 'None provided'}`;
+    }
+    
+    setPreviewPrompt(prompt);
+  };
+
+  React.useEffect(() => {
+    generatePreviewPrompt();
+  }, [preferences, selectedType, platform, language]);
 
   const renderPromptModeSelection = () => (
     <div className="space-y-6 mb-8">
@@ -423,98 +499,6 @@ export default function BiographyCustomization({ onCustomize, selectedType, plat
     </div>
   );
 
-  const renderAuthorCustomization = () => (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          What genre are you writing in?
-        </label>
-        <select
-          value={preferences.authorGenre || ''}
-          onChange={(e) => setPreferences(prev => ({ ...prev, authorGenre: e.target.value }))}
-          className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-        >
-          <option value="">Select genre</option>
-          <option value="fiction">Fiction</option>
-          <option value="non-fiction">Non-Fiction</option>
-          <option value="mystery">Mystery</option>
-          <option value="romance">Romance</option>
-          <option value="fantasy">Fantasy</option>
-          <option value="sci-fi">Science Fiction</option>
-          <option value="thriller">Thriller</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Writing style preferences
-        </label>
-        <select
-          value={preferences.authorStyle || ''}
-          onChange={(e) => setPreferences(prev => ({ ...prev, authorStyle: e.target.value }))}
-          className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-        >
-          <option value="">Select style</option>
-          <option value="descriptive">Descriptive</option>
-          <option value="concise">Concise</option>
-          <option value="dialogue-heavy">Dialogue Heavy</option>
-          <option value="action-packed">Action Packed</option>
-          <option value="character-focused">Character Focused</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Context about your story
-        </label>
-        <Tooltip content="Provide any relevant context about your story, characters, or previous chapters">
-          <textarea
-            value={preferences.authorContext || ''}
-            onChange={(e) => setPreferences(prev => ({ ...prev, authorContext: e.target.value }))}
-            placeholder="e.g., This is chapter 3, focusing on the protagonist's internal conflict..."
-            rows={3}
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </Tooltip>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Specific instructions for this section
-        </label>
-        <Tooltip content="Add any specific instructions for how you want this section to be written">
-          <textarea
-            value={preferences.authorInstructions || ''}
-            onChange={(e) => setPreferences(prev => ({ ...prev, authorInstructions: e.target.value }))}
-            placeholder="e.g., Focus on showing rather than telling, Maintain a tense atmosphere..."
-            rows={3}
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </Tooltip>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Paste existing text to continue from
-        </label>
-        <Tooltip content="Paste any existing text you want to continue from">
-          <textarea
-            value={preferences.authorPasteText || ''}
-            onChange={(e) => setPreferences(prev => ({ ...prev, authorPasteText: e.target.value }))}
-            placeholder="Paste your text here..."
-            rows={5}
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </Tooltip>
-      </div>
-
-      <div className="text-sm text-gray-600 italic">
-        Note: The AI will continue your writing naturally without adding artificial structure like introductions or conclusions. It will maintain the flow of your story and respect your existing style.
-      </div>
-    </div>
-  );
 
   const renderArticleCustomization = () => {
     const translations = getCustomizationTranslations(language || 'en');
@@ -727,6 +711,13 @@ export default function BiographyCustomization({ onCustomize, selectedType, plat
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6"
     >
+      <PromptPreview
+        prompt={previewPrompt}
+        language={language || 'en'}
+        isVisible={showPromptPreview}
+        onToggle={() => setShowPromptPreview(!showPromptPreview)}
+      />
+      
       <h2 className="text-2xl font-semibold text-center mb-6">{translations.title}</h2>
 
       <div className="mb-6 p-4 bg-blue-50 rounded-lg flex items-center justify-center space-x-2">
