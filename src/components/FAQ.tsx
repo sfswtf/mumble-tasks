@@ -391,7 +391,7 @@ const getFAQTranslations = (language: string) => {
             },
             {
               question: 'Kan jeg bruke Mumble til kreativ skriving?',
-              answer: 'Absolutt! Bruk Artikkel- eller Biografi-modus for kreativt innhold. Snakk om storylideer, karakterbeskrivelser eller plottutfall. AI-en kan hjelpe til med å strukturere kreative tanker.'
+              answer: 'Absolutt! Bruk Artikkel-modus for kreativt innhold. Snakk om storylideer, karakterbeskrivelser eller plottutfall. AI-en kan hjelpe til med å strukturere kreative tanker.'
             }
           ]
         },
@@ -422,6 +422,37 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['gettingStarted-0', 'gettingStarted-1']));
   
   const t = getFAQTranslations(language);
+  
+  // Additional UI translations
+  const getUITranslations = (language: string) => {
+    const translations = {
+      en: {
+        quickStartGuide: 'Quick Start Guide',
+        chooseMode: 'Choose Mode',
+        selectContentType: 'Select content type',
+        recordAudio: 'Record Audio',
+        uploadOrRecord: 'Upload or record',
+        getResults: 'Get Results',
+        aiGeneratesContent: 'AI generates content',
+        stillNeedHelp: 'Still need help?',
+        contactSupport: 'Contact support at'
+      },
+      no: {
+        quickStartGuide: 'Hurtigstart Guide',
+        chooseMode: 'Velg Modus',
+        selectContentType: 'Velg innholdstype',
+        recordAudio: 'Ta opp lyd',
+        uploadOrRecord: 'Last opp eller ta opp',
+        getResults: 'Få Resultater',
+        aiGeneratesContent: 'AI genererer innhold',
+        stillNeedHelp: 'Trenger du fortsatt hjelp?',
+        contactSupport: 'Kontakt support på'
+      }
+    };
+    return translations[language as keyof typeof translations] || translations.no;
+  };
+  
+  const uiT = getUITranslations(language);
   
   // Safety check - if no sections, show basic content
   if (!t || !t.sections || Object.keys(t.sections).length === 0) {
@@ -632,7 +663,7 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
               <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                   <Zap className="w-5 h-5 mr-2 text-blue-600" />
-                  Quick Start Guide
+                  {uiT.quickStartGuide}
                   </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center space-x-3 p-3 bg-white rounded-lg">
@@ -640,8 +671,8 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
                       1
                     </div>
                     <div>
-                      <div className="font-medium text-gray-800">Choose Mode</div>
-                      <div className="text-sm text-gray-600">Select content type</div>
+                      <div className="font-medium text-gray-800">{uiT.chooseMode}</div>
+                      <div className="text-sm text-gray-600">{uiT.selectContentType}</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-white rounded-lg">
@@ -649,8 +680,8 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
                       2
                     </div>
                     <div>
-                      <div className="font-medium text-gray-800">Record Audio</div>
-                      <div className="text-sm text-gray-600">Upload or record</div>
+                      <div className="font-medium text-gray-800">{uiT.recordAudio}</div>
+                      <div className="text-sm text-gray-600">{uiT.uploadOrRecord}</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-white rounded-lg">
@@ -658,8 +689,8 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
                       3
                     </div>
                     <div>
-                      <div className="font-medium text-gray-800">Get Results</div>
-                      <div className="text-sm text-gray-600">AI generates content</div>
+                      <div className="font-medium text-gray-800">{uiT.getResults}</div>
+                      <div className="text-sm text-gray-600">{uiT.aiGeneratesContent}</div>
                     </div>
                   </div>
                 </div>
@@ -667,11 +698,11 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
 
               {/* Contact Support */}
               <div className="mt-6 text-center p-4 bg-gray-50 rounded-lg">
-                <p className="text-gray-600 mb-2">Still need help?</p>
+                <p className="text-gray-600 mb-2">{uiT.stillNeedHelp}</p>
                 <p className="text-sm text-gray-500">
-                  Contact support at{' '}
-                  <a href="mailto:support@mumbletasks.com" className="text-blue-600 hover:underline">
-                    support@mumbletasks.com
+                  {uiT.contactSupport}{' '}
+                  <a href="mailto:support@mumbletasks.no" className="text-blue-600 hover:underline">
+                    support@mumbletasks.no
                   </a>
                 </p>
               </div>
