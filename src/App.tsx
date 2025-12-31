@@ -64,7 +64,7 @@ const scrollToSection = (sectionId: string, offset: number = 100) => {
 };
 
 function App() {
-  const { user, signIn, signOut, signUp } = useAuth();
+  const { user, signIn, signOut, signUp, loading } = useAuth();
   const { transcriptions, saveTranscription } = useTranscriptions(user?.id || null);
   const { error: appError, handleError, clearError, retryOperation, isRetrying } = useErrorHandler();
   const [showHistory, setShowHistory] = useState(false);
@@ -552,10 +552,12 @@ function App() {
   };
 
   useEffect(() => {
-    if (!user) {
+    if (!loading && !user) {
       setShowAuthModal(true);
+    } else if (user) {
+      setShowAuthModal(false);
     }
-  }, [user]);
+  }, [user, loading]);
 
   useEffect(() => {
     if (draftTranscription) {
