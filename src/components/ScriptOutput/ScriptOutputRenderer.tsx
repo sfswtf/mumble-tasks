@@ -4,6 +4,7 @@ import ShortVideoScriptOutput from './ShortVideoScriptOutput';
 import YouTubeScriptOutput from './YouTubeScriptOutput';
 import LinkedInPostOutput from './LinkedInPostOutput';
 import FacebookPostOutput from './FacebookPostOutput';
+import ProfessionalDocumentOutput from './ProfessionalDocumentOutput';
 
 interface ScriptOutputRendererProps {
   results: BiographyContent;
@@ -35,6 +36,18 @@ export default function ScriptOutputRenderer({ results, platform, customization 
   
   if (platform === 'facebook') {
     return <FacebookPostOutput results={results} customization={customization} />;
+  }
+  
+  if (platform === 'professional-documents') {
+    const documentType = customization.documentType || 'email';
+    return (
+      <ProfessionalDocumentOutput 
+        results={results} 
+        documentType={documentType}
+        customization={customization}
+        language={customization.language || 'en'}
+      />
+    );
   }
 
   // Fallback to generic display for unknown platforms

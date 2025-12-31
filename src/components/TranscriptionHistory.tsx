@@ -60,19 +60,28 @@ export default function TranscriptionHistory({ transcriptions, onSelect, languag
     }
     
     // Fallback to mode-based title with date
-    const date = format(new Date(record.createdAt), 'MMM d, yyyy');
-    return record.mode === 'tasks' ? `Tasks - ${date}` : `Voice Memo - ${date}`;
+    const date = format(new Date(record.createdAt), language === 'no' ? 'd. MMM yyyy' : 'MMM d, yyyy');
+    const modeLabel = t.typeLabels[record.mode as keyof typeof t.typeLabels] || record.mode;
+    return language === 'no' 
+      ? `${modeLabel} - ${date}` 
+      : record.mode === 'tasks' ? `Tasks - ${date}` : `Voice Memo - ${date}`;
   };
 
   const getRecordSubtitle = (record: TranscriptionRecord): string => {
     if (record.mode === 'tasks' && record.tasks && record.tasks.length > 0) {
-      return `${record.tasks.length} task${record.tasks.length !== 1 ? 's' : ''}`;
+      return language === 'no' 
+        ? `${record.tasks.length} oppgave${record.tasks.length !== 1 ? 'r' : ''}`
+        : `${record.tasks.length} task${record.tasks.length !== 1 ? 's' : ''}`;
     }
     if (record.transcription) {
       const wordCount = record.transcription.split(' ').length;
-      return `${wordCount} words`;
+      return language === 'no' 
+        ? `${wordCount} ord`
+        : `${wordCount} words`;
     }
-    return record.mode === 'tasks' ? 'Task analysis' : 'Voice memo';
+    return language === 'no' 
+      ? (record.mode === 'tasks' ? 'Oppgaveanalyse' : 'Lydmemo')
+      : (record.mode === 'tasks' ? 'Task analysis' : 'Voice memo');
   };
 
   return (
@@ -88,7 +97,11 @@ export default function TranscriptionHistory({ transcriptions, onSelect, languag
             <div className="text-center py-8">
               <Mic className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 text-lg mb-2">{t.noRecordings}</p>
-              <p className="text-gray-400 text-sm">Start by creating your first voice memo or task list</p>
+              <p className="text-gray-400 text-sm">
+                {language === 'no' 
+                  ? 'Start med å lage ditt første lydmemo eller oppgaveliste' 
+                  : 'Start by creating your first voice memo or task list'}
+              </p>
             </div>
           ) : (
             transcriptions.map((record, index) => (

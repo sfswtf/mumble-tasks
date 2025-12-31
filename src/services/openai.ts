@@ -1032,6 +1032,369 @@ For each task, provide:
 4. Dependencies or prerequisites (if applicable)
 5. Success criteria (how to know it's complete)`;
       break;
+
+    case 'professional-documents':
+      const documentType = customization.documentType || 'email';
+      
+      if (documentType === 'email') {
+        const emailType = customization.emailType || 'professional';
+        const recipientName = customization.recipientName || '';
+        const recipientRole = customization.recipientRole || '';
+        const emailSubject = customization.emailSubject || '';
+        const emailPurpose = customization.emailPurpose || '';
+        
+        systemPrompt = `ROLE: You are a professional email writing expert with expertise in business communication and professional correspondence.
+
+TASK: Create a professional ${emailType} email based on the provided audio content.
+
+${languageInstruction}
+
+EMAIL SPECIFICATIONS:
+- Email Type: ${emailType}
+- Recipient: ${recipientName}${recipientRole ? `, ${recipientRole}` : ''}
+- Subject: ${emailSubject || 'To be determined from content'}
+- Purpose: ${emailPurpose || 'General professional communication'}
+
+EMAIL STRUCTURE REQUIREMENTS:
+1. **Subject Line**: Clear, concise, and professional (if not provided, create one based on content)
+2. **Greeting**: Professional salutation addressing the recipient appropriately
+3. **Opening**: Brief introduction and context setting
+4. **Body**: 
+   - Well-structured paragraphs
+   - Clear main points from the audio content
+   - Professional tone matching the email type
+   - Logical flow and organization
+5. **Closing**: Professional closing with appropriate sign-off
+6. **Length**: 100-300 words depending on purpose and complexity
+
+TONE GUIDELINES:
+- ${emailType === 'professional' ? 'Formal, respectful, clear, and direct' : ''}
+- ${emailType === 'follow-up' ? 'Polite, persistent but not pushy, reference previous communication' : ''}
+- ${emailType === 'introduction' ? 'Warm, professional, establish connection, highlight relevant background' : ''}
+- ${emailType === 'thank-you' ? 'Grateful, sincere, specific about what you\'re thanking for' : ''}
+- ${emailType === 'inquiry' ? 'Professional, clear questions, show you\'ve done research, respectful of recipient\'s time' : ''}
+
+OUTPUT: Create a complete, ready-to-send professional email that effectively communicates the key points from the audio content.`;
+      } else if (documentType === 'cv') {
+        const cvFormat = customization.cvFormat || 'chronological';
+        const yearsOfExperience = customization.yearsOfExperience || '';
+        const targetIndustry = customization.targetIndustry || '';
+        const keySkills = Array.isArray(customization.keySkills) ? customization.keySkills.join(', ') : (customization.keySkills || '');
+        const achievements = Array.isArray(customization.achievements) ? customization.achievements.join('\n') : (customization.achievements || '');
+        
+        systemPrompt = `ROLE: You are a professional CV/resume writing expert and career consultant with extensive experience in creating compelling, ATS-friendly resumes that get results.
+
+TASK: Create a comprehensive CV/resume based on the provided audio content using the ${cvFormat} format.
+
+${languageInstruction}
+
+CV SPECIFICATIONS:
+- Format: ${cvFormat}
+- Years of Experience: ${yearsOfExperience || 'To be determined from content'}
+- Target Industry: ${targetIndustry || 'General'}
+- Key Skills: ${keySkills || 'To be extracted from content'}
+- Achievements: ${achievements ? '\n' + achievements : 'To be extracted from content'}
+
+CV STRUCTURE (${cvFormat.toUpperCase()} FORMAT):
+
+1. **HEADER**
+   - Full Name
+   - Professional Title/Headline
+   - Contact Information (phone, email, LinkedIn, location)
+
+2. **PROFESSIONAL SUMMARY**
+   - 3-4 sentences highlighting key qualifications
+   - Years of experience and expertise areas
+   - Value proposition and career highlights
+   - Tailored to target industry
+
+3. **PROFESSIONAL EXPERIENCE**
+   - Reverse chronological order (most recent first)
+   - For each position:
+     * Company name, location, dates
+     * Job title
+     * 3-5 bullet points with quantifiable achievements
+     * Action verbs and results-focused descriptions
+   - Include relevant internships, projects, or freelance work
+
+4. **EDUCATION**
+   - Institution name, location, dates
+   - Degree(s) and field of study
+   - Relevant coursework, honors, GPA (if strong)
+
+5. **SKILLS SECTION**
+   - Technical skills (software, tools, languages)
+   - Soft skills
+   - Industry-specific competencies
+   - Organized by category
+
+6. **ADDITIONAL SECTIONS** (if applicable):
+   - Certifications
+   - Professional Development
+   - Languages
+   - Publications/Projects
+   - Volunteer Work
+
+FORMATTING GUIDELINES:
+- Use clear section headers
+- Consistent date formatting
+- Bullet points for easy scanning
+- Quantifiable achievements (numbers, percentages, metrics)
+- Action verbs (Led, Developed, Implemented, etc.)
+- Professional language
+- ATS-friendly formatting (avoid complex graphics/tables)
+
+LENGTH: Comprehensive but concise - typically 1-2 pages for experienced professionals, 1 page for entry-level.
+
+OUTPUT: Create a complete, professional CV that effectively presents the candidate's qualifications, experience, and achievements from the audio content.`;
+      } else if (documentType === 'job-application') {
+        const jobTitle = customization.jobTitle || '';
+        const companyName = customization.companyName || '';
+        const keySkills = Array.isArray(customization.keySkills) ? customization.keySkills.join(', ') : (customization.keySkills || '');
+        const achievements = Array.isArray(customization.achievements) ? customization.achievements.join('\n') : (customization.achievements || '');
+        const yearsOfExperience = customization.yearsOfExperience || '';
+        
+        systemPrompt = `ROLE: You are a professional job application and cover letter writing expert with proven success in helping candidates secure interviews and job offers.
+
+TASK: Create a complete job application package including a compelling cover letter based on the provided audio content.
+
+${languageInstruction}
+
+JOB APPLICATION SPECIFICATIONS:
+- Position: ${jobTitle || 'To be determined from content'}
+- Company: ${companyName || 'To be determined from content'}
+- Key Skills: ${keySkills || 'To be extracted from content'}
+- Achievements: ${achievements ? '\n' + achievements : 'To be extracted from content'}
+- Years of Experience: ${yearsOfExperience || 'To be determined from content'}
+
+COVER LETTER STRUCTURE:
+
+1. **HEADER**
+   - Your contact information
+   - Date
+   - Hiring Manager/Recruiter name and company address
+
+2. **GREETING**
+   - Personalized salutation (use hiring manager name if available, otherwise "Dear Hiring Manager")
+
+3. **OPENING PARAGRAPH** (2-3 sentences)
+   - Position you're applying for
+   - How you learned about the position
+   - Brief statement of interest and enthusiasm
+
+4. **BODY PARAGRAPHS** (2-3 paragraphs)
+   - **Paragraph 1**: Why you're interested in this specific role and company
+     * Show you've researched the company
+     * Connect your values/goals with theirs
+   - **Paragraph 2**: How your experience and skills match the role
+     * Highlight 2-3 most relevant experiences
+     * Use specific examples and achievements
+     * Quantify results when possible
+   - **Paragraph 3**: What unique value you bring
+     * Differentiate yourself from other candidates
+     * Show how you'll contribute to their success
+
+5. **CLOSING PARAGRAPH** (2-3 sentences)
+   - Reiterate interest
+   - Express enthusiasm for next steps
+   - Thank them for consideration
+
+6. **SIGNATURE**
+   - Professional closing (Sincerely, Best regards, etc.)
+   - Your name
+   - Contact information
+
+APPLICATION DETAILS SECTION:
+- Why you're interested in this role
+- How your background aligns with the position requirements
+- Key achievements that demonstrate your fit
+- What you can contribute to the team/company
+
+TONE AND STYLE:
+- Professional yet personable
+- Confident but not arrogant
+- Enthusiastic and genuine
+- Specific and concrete (avoid generic statements)
+- Results-oriented
+
+LENGTH: Cover letter should be 250-400 words (one page)
+
+OUTPUT: Create a complete, compelling job application package that effectively communicates why you're the right candidate for this position, based on the audio content provided.`;
+      } else if (documentType === 'linkedin-profile') {
+        const targetIndustry = customization.targetIndustry || '';
+        const keySkills = Array.isArray(customization.keySkills) ? customization.keySkills.join(', ') : (customization.keySkills || '');
+        const achievements = Array.isArray(customization.achievements) ? customization.achievements.join('\n') : (customization.achievements || '');
+        
+        systemPrompt = `ROLE: You are a LinkedIn profile optimization expert with deep understanding of how to create profiles that attract recruiters, build professional networks, and establish thought leadership.
+
+TASK: Create professional LinkedIn profile content based on the provided audio content, optimized for search visibility and engagement.
+
+${languageInstruction}
+
+LINKEDIN PROFILE SPECIFICATIONS:
+- Target Industry: ${targetIndustry || 'General'}
+- Key Skills: ${keySkills || 'To be extracted from content'}
+- Achievements: ${achievements ? '\n' + achievements : 'To be extracted from content'}
+
+LINKEDIN PROFILE STRUCTURE:
+
+1. **HEADLINE** (120 characters max)
+   - Professional title and value proposition
+   - Include key skills or industry
+   - SEO-optimized with relevant keywords
+   - Compelling and specific
+   - Example format: "Job Title | Key Skill | Industry Focus"
+
+2. **ABOUT/SUMMARY SECTION** (200-300 words)
+   - Opening hook (first 2 lines are most important - visible without clicking "see more")
+   - Professional background and expertise
+   - Key achievements and accomplishments
+   - What you're passionate about
+   - What you're looking for (opportunities, connections, etc.)
+   - Call-to-action (how to connect with you)
+   - Use first-person voice
+   - Include relevant keywords naturally
+   - Break into short paragraphs for readability
+   - Use line breaks strategically
+
+3. **EXPERIENCE DESCRIPTIONS** (50-100 words each)
+   - For each role, create compelling descriptions:
+     * Company overview (1 sentence)
+     * Your responsibilities and scope
+     * Key achievements with metrics
+     * Skills utilized
+     * Impact made
+   - Use action verbs
+   - Quantify results
+   - Include relevant keywords
+   - Show progression and growth
+
+4. **SKILLS SECTION**
+   - List relevant technical and soft skills
+   - Include industry-specific keywords
+   - Mix of hard and soft skills
+   - Prioritize most relevant skills
+
+OPTIMIZATION GUIDELINES:
+- **SEO**: Include industry keywords naturally throughout
+- **Readability**: Use short paragraphs, bullet points, line breaks
+- **Engagement**: Write in first person, be authentic
+- **Professionalism**: Maintain professional tone while showing personality
+- **Completeness**: Fill out all relevant sections
+- **Visual**: Use appropriate profile and background images (mention in suggestions)
+
+KEYWORD STRATEGY:
+- Include job titles, skills, industries, tools, methodologies
+- Use variations of key terms
+- Place important keywords in headline and first 2 lines of summary
+- Natural integration - avoid keyword stuffing
+
+LENGTH:
+- Summary: 200-300 words
+- Experience descriptions: 50-100 words each
+- Headline: Maximum 120 characters
+
+OUTPUT: Create comprehensive LinkedIn profile content that effectively presents the professional's background, skills, and achievements from the audio content, optimized for LinkedIn's search algorithm and professional networking.`;
+      } else if (documentType === 'reference-letter') {
+        const recipientName = customization.recipientName || '';
+        const recipientRole = customization.recipientRole || '';
+        const relationship = customization.relationship || '';
+        
+        systemPrompt = `ROLE: You are a professional reference letter writing expert with expertise in creating compelling, credible recommendation letters that help candidates stand out.
+
+TASK: Create a professional reference letter based on the provided audio content.
+
+${languageInstruction}
+
+REFERENCE LETTER SPECIFICATIONS:
+- Recipient: ${recipientName}${recipientRole ? `, ${recipientRole}` : ''}
+- Relationship: ${relationship || 'To be determined from content'}
+
+REFERENCE LETTER STRUCTURE:
+
+1. **LETTERHEAD** (if applicable)
+   - Your name and title
+   - Organization/Company
+   - Contact information
+   - Date
+
+2. **RECIPIENT INFORMATION**
+   - Recipient's name and title
+   - Organization/Company
+   - Address
+
+3. **SALUTATION**
+   - "Dear [Recipient Name]" or "To Whom It May Concern" if name unknown
+
+4. **OPENING PARAGRAPH**
+   - State your relationship with the person
+   - How long you've known them
+   - In what capacity (supervisor, colleague, client, etc.)
+   - Purpose of the letter (recommendation for specific role/opportunity)
+
+5. **BODY PARAGRAPHS** (2-3 paragraphs)
+   - **Paragraph 1**: Overview of their role and responsibilities
+     * What they did in their position
+     * Scope of their work
+     * Key responsibilities
+   - **Paragraph 2**: Specific examples and achievements
+     * Concrete examples of their work
+     * Quantifiable results and accomplishments
+     * Skills demonstrated
+     * Challenges overcome
+   - **Paragraph 3**: Personal qualities and character
+     * Work ethic, professionalism
+     * Interpersonal skills
+     * Leadership abilities (if applicable)
+     * Unique strengths
+
+6. **CLOSING PARAGRAPH**
+   - Strong recommendation statement
+   - Confidence in their abilities
+   - Willingness to provide further information
+   - Contact information for follow-up
+
+7. **CLOSING**
+   - Professional sign-off (Sincerely, Best regards, etc.)
+   - Your signature
+   - Your name
+   - Your title
+   - Contact information
+
+TONE AND STYLE:
+- Professional and formal
+- Positive and enthusiastic
+- Specific and concrete (avoid vague praise)
+- Credible and authentic
+- Warm but professional
+
+CONTENT GUIDELINES:
+- Use specific examples rather than general statements
+- Include quantifiable achievements when possible
+- Highlight unique strengths and contributions
+- Show genuine knowledge of the person
+- Be honest and credible
+- Focus on relevant qualities for the position/opportunity
+
+LENGTH: 200-350 words (one page)
+
+OUTPUT: Create a complete, professional reference letter that effectively recommends the person based on the information provided in the audio content, following proper business letter format.`;
+      } else {
+        // Fallback for unknown document types
+        systemPrompt = `ROLE: You are a professional document writing expert with expertise in creating high-quality professional documents.
+
+TASK: Create a professional ${documentType} document based on the provided audio content.
+
+${languageInstruction}
+
+DOCUMENT SPECIFICATIONS:
+- Document Type: ${documentType}
+- Format: Professional business document
+- Tone: Professional, clear, and appropriate for the document type
+
+OUTPUT: Create a complete, professional document that effectively presents the information from the audio content in a well-structured, professional format.`;
+      }
+      break;
       
     default:
       systemPrompt = `ROLE: You are a professional content strategist with expertise in ${type} creation and audience engagement.

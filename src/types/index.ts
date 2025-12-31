@@ -33,7 +33,7 @@ export interface TranscriptionRecord {
   title: string;
   createdAt: string;
   language: string;
-  mode: 'tasks' | 'meeting' | 'content-creator' | 'article' | 'biography'; // biography is legacy
+  mode: 'tasks' | 'meeting' | 'content-creator' | 'article' | 'professional-documents' | 'biography'; // biography is legacy
   summary?: string;
   tasks?: Task[];
 }
@@ -91,6 +91,22 @@ export interface BiographyPreferences {
   // Platform-specific properties for Facebook posts
   audienceType?: string;
   engagementGoal?: string;
+  
+  // Professional documents properties
+  documentType?: 'email' | 'cv' | 'job-application' | 'linkedin-profile' | 'reference-letter';
+  emailType?: 'professional' | 'follow-up' | 'introduction' | 'thank-you' | 'inquiry';
+  cvFormat?: 'chronological' | 'functional' | 'combination';
+  jobTitle?: string;
+  companyName?: string;
+  yearsOfExperience?: string;
+  targetIndustry?: string;
+  keySkills?: string[];
+  achievements?: string[];
+  recipientName?: string;
+  recipientRole?: string;
+  emailSubject?: string;
+  emailPurpose?: string;
+  relationship?: string;
 }
 
 export interface DraftTranscription {
@@ -101,7 +117,7 @@ export interface DraftTranscription {
   timestamp: string;
 }
 
-export type TranscriptionMode = 'tasks' | 'meeting' | 'content-creator' | 'article';
+export type TranscriptionMode = 'tasks' | 'meeting' | 'content-creator' | 'article' | 'professional-documents';
 
 export interface ErrorMessageProps {
   message: string;

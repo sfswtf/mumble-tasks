@@ -11,7 +11,11 @@ import {
   Briefcase, 
   Facebook, 
   Twitter, 
-  FileText 
+  FileText,
+  Mail,
+  FileCheck,
+  UserCheck,
+  Award
 } from 'lucide-react';
 
 interface BiographyTypeSelectorProps {
@@ -49,6 +53,10 @@ const getTranslations = (language: string) => {
         article: {
           title: 'Article',
           description: 'Convert your thoughts into well-organized articles'
+        },
+        'professional-documents': {
+          title: 'Professional Documents',
+          description: 'Generate professional documents from your audio recordings'
         }
       },
       platformSelection: {
@@ -86,6 +94,37 @@ const getTranslations = (language: string) => {
             duration: '3-7 minute read'
           }
         }
+      },
+      documentSelection: {
+        title: 'Choose document type',
+        subtitle: 'Select the type of professional document you want to create',
+        documents: {
+          'email': {
+            title: 'Email',
+            subtitle: 'Professional emails, follow-ups, introductions',
+            duration: '100-300 words'
+          },
+          'cv': {
+            title: 'CV / Resume',
+            subtitle: 'Complete CV with all sections',
+            duration: 'Comprehensive'
+          },
+          'job-application': {
+            title: 'Job Application',
+            subtitle: 'Cover letter and application',
+            duration: '250-400 words'
+          },
+          'linkedin-profile': {
+            title: 'LinkedIn Profile',
+            subtitle: 'Profile text, summary, experience',
+            duration: '200-300 words'
+          },
+          'reference-letter': {
+            title: 'Reference Letter',
+            subtitle: 'Professional recommendation letter',
+            duration: '200-350 words'
+          }
+        }
       }
     },
     no: {
@@ -106,6 +145,10 @@ const getTranslations = (language: string) => {
         article: {
           title: 'Artikkel',
           description: 'Gjør tankene dine om til velorganiserte artikler'
+        },
+        'professional-documents': {
+          title: 'Profesjonelle Dokumenter',
+          description: 'Generer profesjonelle dokumenter fra lydopptakene dine'
         }
       },
       platformSelection: {
@@ -143,6 +186,37 @@ const getTranslations = (language: string) => {
             duration: '3-7 minutters lesing'
           }
         }
+      },
+      documentSelection: {
+        title: 'Velg dokumenttype',
+        subtitle: 'Velg typen profesjonelt dokument du vil lage',
+        documents: {
+          'email': {
+            title: 'E-post',
+            subtitle: 'Profesjonelle e-poster, oppfølginger, introduksjoner',
+            duration: '100-300 ord'
+          },
+          'cv': {
+            title: 'CV',
+            subtitle: 'Komplett CV med alle seksjoner',
+            duration: 'Omfattende'
+          },
+          'job-application': {
+            title: 'Jobbsøknad',
+            subtitle: 'Søknad og cover letter',
+            duration: '250-400 ord'
+          },
+          'linkedin-profile': {
+            title: 'LinkedIn-profil',
+            subtitle: 'Profiltekst, sammendrag, erfaring',
+            duration: '200-300 ord'
+          },
+          'reference-letter': {
+            title: 'Referansebrev',
+            subtitle: 'Profesjonelt anbefalingsbrev',
+            duration: '200-350 ord'
+          }
+        }
       }
     }
   };
@@ -153,7 +227,51 @@ const typeIcons = {
   tasks: ListTodo,
   meeting: Users,
   article: Newspaper,
-  'content-creator': Video
+  'content-creator': Video,
+  'professional-documents': FileText
+};
+
+const documentConfigs: Record<string, PlatformOption> = {
+  'email': {
+    id: 'email',
+    title: 'Email',
+    subtitle: 'Professional emails, follow-ups, introductions',
+    duration: '100-300 words',
+    icon: Mail,
+    emoji: '📧'
+  },
+  'cv': {
+    id: 'cv',
+    title: 'CV / Resume',
+    subtitle: 'Complete CV with all sections',
+    duration: 'Comprehensive',
+    icon: FileCheck,
+    emoji: '📄'
+  },
+  'job-application': {
+    id: 'job-application',
+    title: 'Job Application',
+    subtitle: 'Cover letter and application',
+    duration: '250-400 words',
+    icon: Briefcase,
+    emoji: '💼'
+  },
+  'linkedin-profile': {
+    id: 'linkedin-profile',
+    title: 'LinkedIn Profile',
+    subtitle: 'Profile text, summary, experience',
+    duration: '200-300 words',
+    icon: UserCheck,
+    emoji: '👔'
+  },
+  'reference-letter': {
+    id: 'reference-letter',
+    title: 'Reference Letter',
+    subtitle: 'Professional recommendation letter',
+    duration: '200-350 words',
+    icon: Award,
+    emoji: '✉️'
+  }
 };
 
 const platformConfigs: Record<string, PlatformOption> = {
@@ -210,18 +328,25 @@ const platformConfigs: Record<string, PlatformOption> = {
 export default function BiographyTypeSelector({ onTypeSelect, language, resetKey }: BiographyTypeSelectorProps) {
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
   const [showPlatforms, setShowPlatforms] = useState(false);
+  const [showDocuments, setShowDocuments] = useState(false);
   const t = getTranslations(language);
 
   useEffect(() => {
     setSelectedMode(null);
     setShowPlatforms(false);
+    setShowDocuments(false);
   }, [resetKey]);
 
   const handleModeSelect = (type: string) => {
+    console.log('🖱️ Mode selected:', type);
     if (type === 'content-creator') {
       setSelectedMode(type);
       setShowPlatforms(true);
+    } else if (type === 'professional-documents') {
+      setSelectedMode(type);
+      setShowDocuments(true);
     } else {
+      console.log('🚀 Calling onTypeSelect with:', type);
       onTypeSelect(type);
     }
   };
@@ -231,10 +356,82 @@ export default function BiographyTypeSelector({ onTypeSelect, language, resetKey
     onTypeSelect(`content-creator:${platform}`);
   };
 
+  const handleDocumentSelect = (documentType: string) => {
+    // Pass both the mode and document type info
+    onTypeSelect(`professional-documents:${documentType}`);
+  };
+
   const handleBackToModes = () => {
     setShowPlatforms(false);
+    setShowDocuments(false);
     setSelectedMode(null);
   };
+
+  if (showDocuments && selectedMode === 'professional-documents') {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-6">
+          <button
+            onClick={handleBackToModes}
+            className="flex items-center text-gray-600 hover:text-gray-800 transition-colors mb-4"
+          >
+            <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
+            {language === 'no' ? 'Tilbake' : 'Back'}
+          </button>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4 text-gray-800">
+            {t.documentSelection.title}
+          </h2>
+          <p className="text-center text-gray-600 mb-8">
+            {t.documentSelection.subtitle}
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Object.keys(documentConfigs).map((documentKey) => {
+            const document = documentConfigs[documentKey];
+            const documentTranslation = t.documentSelection.documents[documentKey as keyof typeof t.documentSelection.documents];
+            const Icon = document.icon;
+            
+            return (
+              <motion.button
+                key={document.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleDocumentSelect(document.id)}
+                className="bg-white rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-purple-500 group"
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-2">
+                      <span className="text-2xl">{document.emoji}</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-purple-50 group-hover:bg-purple-100 transition-colors">
+                      <Icon className="w-5 h-5 text-purple-600" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                      {documentTranslation.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {documentTranslation.subtitle}
+                    </p>
+                    <div className="text-xs text-gray-500 mb-4 bg-gray-50 px-2 py-1 rounded">
+                      {documentTranslation.duration}
+                    </div>
+                    <div className="flex items-center font-medium text-sm text-purple-600">
+                      <span>{language === 'no' ? 'Velg' : 'Select'}</span>
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </div>
+                  </div>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   if (showPlatforms && selectedMode === 'content-creator') {
     return (
@@ -312,7 +509,7 @@ export default function BiographyTypeSelector({ onTypeSelect, language, resetKey
         {/* Top row: Three smaller cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {(Object.keys(t.types) as Array<keyof typeof t.types>)
-            .filter(type => type !== 'content-creator')
+            .filter(type => type !== 'content-creator' && type !== 'professional-documents')
             .map((type) => {
             const Icon = typeIcons[type];
             const isTask = type === 'tasks';
@@ -367,11 +564,12 @@ export default function BiographyTypeSelector({ onTypeSelect, language, resetKey
           })}
         </div>
 
-        {/* Bottom row: Content Creation - Full width prominent card */}
-        {(Object.keys(t.types) as Array<keyof typeof t.types>)
-          .filter(type => type === 'content-creator')
+        {/* Bottom row: Professional Documents (above) and Content Creation - Full width prominent cards */}
+        {(['professional-documents', 'content-creator'] as Array<keyof typeof t.types>)
           .map((type) => {
           const Icon = typeIcons[type];
+          const isContentCreator = type === 'content-creator';
+          const isProfessionalDocs = type === 'professional-documents';
           
           return (
             <motion.button
@@ -379,12 +577,12 @@ export default function BiographyTypeSelector({ onTypeSelect, language, resetKey
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => handleModeSelect(type)}
-              className="w-full bg-gradient-to-br from-white to-red-50 rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-red-500 relative"
+              className={`w-full bg-gradient-to-br from-white ${isContentCreator ? 'to-red-50' : 'to-purple-50'} rounded-xl shadow-lg p-6 text-left hover:shadow-xl transition-all duration-300 border-2 border-transparent ${isContentCreator ? 'hover:border-red-500' : 'hover:border-purple-500'} relative`}
             >
               
               <div className="flex items-start space-x-6">
-                <div className="p-4 rounded-lg bg-red-100 flex-shrink-0">
-                  <Icon className="w-8 h-8 text-red-600" />
+                <div className={`p-4 rounded-lg ${isContentCreator ? 'bg-red-100' : 'bg-purple-100'} flex-shrink-0`}>
+                  <Icon className={`w-8 h-8 ${isContentCreator ? 'text-red-600' : 'text-purple-600'}`} />
                 </div>
                 
                 <div className="flex-1">
@@ -395,16 +593,28 @@ export default function BiographyTypeSelector({ onTypeSelect, language, resetKey
                     {t.types[type].description}
                   </p>
                   
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">📱 TikTok</span>
-                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">📺 YouTube</span>
-                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">💼 LinkedIn</span>
-                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">👥 Facebook</span>
-                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">🐦 Twitter</span>
-                    <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">📝 Blog</span>
-                  </div>
+                  {isContentCreator && (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">📱 TikTok</span>
+                      <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">📺 YouTube</span>
+                      <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">💼 LinkedIn</span>
+                      <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">👥 Facebook</span>
+                      <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">🐦 Twitter</span>
+                      <span className="text-sm bg-red-100 text-red-700 px-3 py-2 rounded-lg font-medium">📝 Blog</span>
+                    </div>
+                  )}
                   
-                  <div className="flex items-center font-medium text-base text-red-600">
+                  {isProfessionalDocs && (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      <span className="text-sm bg-purple-100 text-purple-700 px-3 py-2 rounded-lg font-medium">📧 Email</span>
+                      <span className="text-sm bg-purple-100 text-purple-700 px-3 py-2 rounded-lg font-medium">📄 CV</span>
+                      <span className="text-sm bg-purple-100 text-purple-700 px-3 py-2 rounded-lg font-medium">💼 Job Application</span>
+                      <span className="text-sm bg-purple-100 text-purple-700 px-3 py-2 rounded-lg font-medium">👔 LinkedIn Profile</span>
+                      <span className="text-sm bg-purple-100 text-purple-700 px-3 py-2 rounded-lg font-medium">✉️ Reference Letter</span>
+                    </div>
+                  )}
+                  
+                  <div className={`flex items-center font-medium text-base ${isContentCreator ? 'text-red-600' : 'text-purple-600'}`}>
                     <span>{language === 'no' ? 'Velg' : 'Select'}</span>
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </div>

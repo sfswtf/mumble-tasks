@@ -168,6 +168,7 @@ function App() {
   };
 
   const handleTypeSelect = useCallback((type: string) => {
+    console.log('📥 handleTypeSelect called with:', type);
     // Handle content-creator with platform selection
     if (type.startsWith('content-creator:')) {
       const [, platform] = type.split(':');
@@ -176,6 +177,16 @@ function App() {
       setCustomization(prev => ({
         ...prev,
         platform: platform
+      }));
+      setCurrentStep('customize');
+      scrollToSection('customize-section');
+    } else if (type.startsWith('professional-documents:')) {
+      const [, documentType] = type.split(':');
+      setBiographyType('professional-documents' as TranscriptionMode);
+      // Store document type in customization
+      setCustomization(prev => ({
+        ...prev,
+        documentType: documentType as any
       }));
       setCurrentStep('customize');
       scrollToSection('customize-section');
@@ -418,6 +429,62 @@ function App() {
         });
 
         setCompletedSteps(prev => [...prev, 'process']);
+      } else if (biographyType === 'professional-documents') {
+        // Stage 3: Professional document generation (70-100%)
+        const content = await generatePromptContent(
+          transcription,
+          'professional-documents',
+          customization,
+          selectedLanguage,
+          (contentProgress: number) => {
+            setProgress(70 + (contentProgress * 30));
+          }
+        );
+
+        setProgress(100);
+
+        const result = {
+          id: uuidv4(),
+          transcription,
+          content,
+          documentType: customization.documentType,
+          customization,
+          type: biographyType,
+          title: await generateTitle(transcription, selectedLanguage),
+          createdAt: new Date().toISOString(),
+          language: selectedLanguage
+        };
+
+        setResults(result);
+        
+        // Create a more detailed title for professional-documents mode
+        let enhancedTitle = result.title;
+        if (biographyType === 'professional-documents' && customization.documentType) {
+          const documentTypeNames = {
+            'email': 'Email',
+            'cv': 'CV',
+            'job-application': 'Job Application',
+            'linkedin-profile': 'LinkedIn Profile',
+            'reference-letter': 'Reference Letter'
+          };
+          const documentTypeName = documentTypeNames[customization.documentType as keyof typeof documentTypeNames] || customization.documentType;
+          enhancedTitle = `${documentTypeName} - ${result.title}`;
+        }
+        
+        await saveTranscription({
+          id: result.id,
+          userId: user.id,
+          transcription,
+          type: biographyType,
+          content: result,
+          title: enhancedTitle,
+          createdAt: result.createdAt,
+          language: selectedLanguage,
+          mode: biographyType,
+          summary: content.content ? content.content.slice(0, 200) + '...' : undefined
+        });
+
+        setCompletedSteps(prev => [...prev, 'process']);
       } else {
         // Stage 3: Content generation (70-100%)
         const content = await generatePromptContent(
@@ -611,6 +678,17 @@ function App() {
       );
     }
 
+    // For professional documents, use the professional documents output renderer
+    if (biographyType === 'professional-documents' && results.content && customization.documentType) {
+      return (
+        <ScriptOutputRenderer 
+          results={results.content}
+          platform="professional-documents"
+          customization={customization}
+        />
+      );
+    }
+
     // For tasks and meetings, use the existing results section
     if (biographyType === 'tasks' || biographyType === 'meeting') {
       return (
@@ -641,7 +719,7 @@ function App() {
     }
 
     return null;
-  }, [results, biographyType, customization.platform, customization, selectedLanguage]);
+  }, [results, biographyType, customization.platform, customization.documentType, customization, selectedLanguage]);
 
   const translations = useMemo(() => getTranslations(selectedLanguage), [selectedLanguage]);
 

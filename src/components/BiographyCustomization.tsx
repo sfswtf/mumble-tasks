@@ -72,6 +72,78 @@ const getCustomizationTranslations = (language: string) => {
         },
         hint: 'Choose the type of article that best matches your content'
       },
+      professionalDocuments: {
+        title: '📄 Professional Documents Configuration',
+        description: 'Create professional documents from your audio content with proper formatting and structure.',
+        documentType: 'Document Type',
+        emailConfig: {
+          title: 'Email Configuration',
+          emailType: 'Email Type',
+          recipientName: 'Recipient Name',
+          recipientNamePlaceholder: 'e.g., John Smith',
+          recipientRole: 'Recipient Role',
+          recipientRolePlaceholder: 'e.g., Hiring Manager',
+          emailSubject: 'Email Subject',
+          emailSubjectPlaceholder: 'e.g., Application for Software Engineer Position',
+          emailPurpose: 'Email Purpose',
+          emailPurposePlaceholder: 'Describe the purpose and key points of this email...',
+          emailTypes: {
+            professional: 'Professional Email',
+            'follow-up': 'Follow-up Email',
+            introduction: 'Introduction Email',
+            'thank-you': 'Thank You Email',
+            inquiry: 'Inquiry Email'
+          }
+        },
+        cvConfig: {
+          title: 'CV Configuration',
+          cvFormat: 'CV Format',
+          yearsOfExperience: 'Years of Experience',
+          yearsOfExperiencePlaceholder: 'e.g., 5 years',
+          targetIndustry: 'Target Industry',
+          targetIndustryPlaceholder: 'e.g., Software Development, Marketing',
+          keySkills: 'Key Skills',
+          keySkillsPlaceholder: 'Enter skills separated by commas',
+          achievements: 'Key Achievements',
+          achievementsPlaceholder: 'List your main achievements, one per line',
+          cvFormats: {
+            chronological: 'Chronological',
+            functional: 'Functional',
+            combination: 'Combination'
+          }
+        },
+        jobApplicationConfig: {
+          title: 'Job Application Configuration',
+          jobTitle: 'Job Title',
+          jobTitlePlaceholder: 'e.g., Senior Software Engineer',
+          companyName: 'Company Name',
+          companyNamePlaceholder: 'e.g., Tech Corp Inc.',
+          keySkills: 'Key Skills',
+          keySkillsPlaceholder: 'Enter skills separated by commas',
+          achievements: 'Key Achievements',
+          achievementsPlaceholder: 'List your main achievements, one per line',
+          yearsOfExperience: 'Years of Experience',
+          yearsOfExperiencePlaceholder: 'e.g., 5 years'
+        },
+        linkedinConfig: {
+          title: 'LinkedIn Profile Configuration',
+          targetIndustry: 'Target Industry',
+          targetIndustryPlaceholder: 'e.g., Software Development, Marketing',
+          keySkills: 'Key Skills',
+          keySkillsPlaceholder: 'Enter skills separated by commas',
+          achievements: 'Key Achievements',
+          achievementsPlaceholder: 'List your main achievements, one per line'
+        },
+        referenceLetterConfig: {
+          title: 'Reference Letter Configuration',
+          recipientName: 'Recipient Name',
+          recipientNamePlaceholder: 'e.g., Jane Doe',
+          recipientRole: 'Recipient Role',
+          recipientRolePlaceholder: 'e.g., Hiring Manager at Company XYZ',
+          relationship: 'Relationship',
+          relationshipPlaceholder: 'Describe your relationship with the person (e.g., Former supervisor, Colleague, etc.)'
+        }
+      },
       generic: {
         tone: 'Tone',
         tonePlaceholder: 'e.g., Professional, Casual, Academic...',
@@ -139,6 +211,78 @@ const getCustomizationTranslations = (language: string) => {
           technical_audience: 'Tekniske spesialister'
         },
         hint: 'Velg artikkeltypen som best matcher innholdet ditt'
+      },
+      professionalDocuments: {
+        title: '📄 Profesjonelle Dokumenter Konfigurasjon',
+        description: 'Lag profesjonelle dokumenter fra lydinnholdet ditt med riktig formatering og struktur.',
+        documentType: 'Dokumenttype',
+        emailConfig: {
+          title: 'E-post Konfigurasjon',
+          emailType: 'E-posttype',
+          recipientName: 'Mottakerens navn',
+          recipientNamePlaceholder: 'f.eks., Ola Nordmann',
+          recipientRole: 'Mottakerens rolle',
+          recipientRolePlaceholder: 'f.eks., Rekrutteringsleder',
+          emailSubject: 'E-postemne',
+          emailSubjectPlaceholder: 'f.eks., Søknad om stilling som Utvikler',
+          emailPurpose: 'E-postformål',
+          emailPurposePlaceholder: 'Beskriv formålet og hovedpunktene i denne e-posten...',
+          emailTypes: {
+            professional: 'Profesjonell e-post',
+            'follow-up': 'Oppfølgings-e-post',
+            introduction: 'Introduksjons-e-post',
+            'thank-you': 'Takk-e-post',
+            inquiry: 'Forespørsel'
+          }
+        },
+        cvConfig: {
+          title: 'CV Konfigurasjon',
+          cvFormat: 'CV-format',
+          yearsOfExperience: 'Års erfaring',
+          yearsOfExperiencePlaceholder: 'f.eks., 5 år',
+          targetIndustry: 'Målbransje',
+          targetIndustryPlaceholder: 'f.eks., Programvareutvikling, Markedsføring',
+          keySkills: 'Nøkkelferdigheter',
+          keySkillsPlaceholder: 'Skriv inn ferdigheter separert med komma',
+          achievements: 'Nøkkelprestasjoner',
+          achievementsPlaceholder: 'List opp dine viktigste prestasjoner, en per linje',
+          cvFormats: {
+            chronological: 'Kronologisk',
+            functional: 'Funksjonell',
+            combination: 'Kombinasjon'
+          }
+        },
+        jobApplicationConfig: {
+          title: 'Jobbsøknad Konfigurasjon',
+          jobTitle: 'Stillingstittel',
+          jobTitlePlaceholder: 'f.eks., Senior Utvikler',
+          companyName: 'Bedriftsnavn',
+          companyNamePlaceholder: 'f.eks., Tech Corp AS',
+          keySkills: 'Nøkkelferdigheter',
+          keySkillsPlaceholder: 'Skriv inn ferdigheter separert med komma',
+          achievements: 'Nøkkelprestasjoner',
+          achievementsPlaceholder: 'List opp dine viktigste prestasjoner, en per linje',
+          yearsOfExperience: 'Års erfaring',
+          yearsOfExperiencePlaceholder: 'f.eks., 5 år'
+        },
+        linkedinConfig: {
+          title: 'LinkedIn-profil Konfigurasjon',
+          targetIndustry: 'Målbransje',
+          targetIndustryPlaceholder: 'f.eks., Programvareutvikling, Markedsføring',
+          keySkills: 'Nøkkelferdigheter',
+          keySkillsPlaceholder: 'Skriv inn ferdigheter separert med komma',
+          achievements: 'Nøkkelprestasjoner',
+          achievementsPlaceholder: 'List opp dine viktigste prestasjoner, en per linje'
+        },
+        referenceLetterConfig: {
+          title: 'Referansebrev Konfigurasjon',
+          recipientName: 'Mottakerens navn',
+          recipientNamePlaceholder: 'f.eks., Kari Nordmann',
+          recipientRole: 'Mottakerens rolle',
+          recipientRolePlaceholder: 'f.eks., Rekrutteringsleder ved Bedrift XYZ',
+          relationship: 'Forhold',
+          relationshipPlaceholder: 'Beskriv ditt forhold til personen (f.eks., Tidligere leder, Kollega, etc.)'
+        }
       },
       generic: {
         tone: 'Tone',
@@ -590,6 +734,422 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
     );
   };
 
+  const renderProfessionalDocumentsCustomization = () => {
+    const translations = getCustomizationTranslations(language || 'en');
+    const documentType = preferences.documentType || 'email';
+    
+    const renderEmailCustomization = () => {
+      const t = translations.professionalDocuments.emailConfig;
+      return (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+            <h3 className="text-lg font-medium text-purple-900 mb-2">
+              {t.title}
+            </h3>
+            <p className="text-sm text-purple-700">
+              {translations.professionalDocuments.description}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.emailType}
+            </label>
+            <select
+              value={preferences.emailType || 'professional'}
+              onChange={(e) => setPreferences(prev => ({ ...prev, emailType: e.target.value as any }))}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              {Object.entries(t.emailTypes).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.recipientName}
+            </label>
+            <input
+              type="text"
+              value={preferences.recipientName || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, recipientName: e.target.value }))}
+              placeholder={t.recipientNamePlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.recipientRole}
+            </label>
+            <input
+              type="text"
+              value={preferences.recipientRole || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, recipientRole: e.target.value }))}
+              placeholder={t.recipientRolePlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.emailSubject}
+            </label>
+            <input
+              type="text"
+              value={preferences.emailSubject || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, emailSubject: e.target.value }))}
+              placeholder={t.emailSubjectPlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.emailPurpose}
+            </label>
+            <textarea
+              value={preferences.emailPurpose || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, emailPurpose: e.target.value }))}
+              placeholder={t.emailPurposePlaceholder}
+              rows={4}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      );
+    };
+
+    const renderCVCustomization = () => {
+      const t = translations.professionalDocuments.cvConfig;
+      return (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+            <h3 className="text-lg font-medium text-purple-900 mb-2">
+              {t.title}
+            </h3>
+            <p className="text-sm text-purple-700">
+              {translations.professionalDocuments.description}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.cvFormat}
+            </label>
+            <select
+              value={preferences.cvFormat || 'chronological'}
+              onChange={(e) => setPreferences(prev => ({ ...prev, cvFormat: e.target.value as any }))}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              {Object.entries(t.cvFormats).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.yearsOfExperience}
+            </label>
+            <input
+              type="text"
+              value={preferences.yearsOfExperience || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, yearsOfExperience: e.target.value }))}
+              placeholder={t.yearsOfExperiencePlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.targetIndustry}
+            </label>
+            <input
+              type="text"
+              value={preferences.targetIndustry || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, targetIndustry: e.target.value }))}
+              placeholder={t.targetIndustryPlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.keySkills}
+            </label>
+            <input
+              type="text"
+              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join(', ') : (preferences.keySkills || '')}
+              onChange={(e) => {
+                const skills = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+                setPreferences(prev => ({ ...prev, keySkills: skills }));
+              }}
+              placeholder={t.keySkillsPlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.achievements}
+            </label>
+            <textarea
+              value={Array.isArray(preferences.achievements) ? preferences.achievements.join('\n') : (preferences.achievements || '')}
+              onChange={(e) => {
+                const achievements = e.target.value.split('\n').filter(a => a.trim());
+                setPreferences(prev => ({ ...prev, achievements: achievements }));
+              }}
+              placeholder={t.achievementsPlaceholder}
+              rows={4}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      );
+    };
+
+    const renderJobApplicationCustomization = () => {
+      const t = translations.professionalDocuments.jobApplicationConfig;
+      return (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+            <h3 className="text-lg font-medium text-purple-900 mb-2">
+              {t.title}
+            </h3>
+            <p className="text-sm text-purple-700">
+              {translations.professionalDocuments.description}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.jobTitle}
+            </label>
+            <input
+              type="text"
+              value={preferences.jobTitle || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, jobTitle: e.target.value }))}
+              placeholder={t.jobTitlePlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.companyName}
+            </label>
+            <input
+              type="text"
+              value={preferences.companyName || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, companyName: e.target.value }))}
+              placeholder={t.companyNamePlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.keySkills}
+            </label>
+            <input
+              type="text"
+              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join(', ') : (preferences.keySkills || '')}
+              onChange={(e) => {
+                const skills = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+                setPreferences(prev => ({ ...prev, keySkills: skills }));
+              }}
+              placeholder={t.keySkillsPlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.achievements}
+            </label>
+            <textarea
+              value={Array.isArray(preferences.achievements) ? preferences.achievements.join('\n') : (preferences.achievements || '')}
+              onChange={(e) => {
+                const achievements = e.target.value.split('\n').filter(a => a.trim());
+                setPreferences(prev => ({ ...prev, achievements: achievements }));
+              }}
+              placeholder={t.achievementsPlaceholder}
+              rows={4}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.yearsOfExperience}
+            </label>
+            <input
+              type="text"
+              value={preferences.yearsOfExperience || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, yearsOfExperience: e.target.value }))}
+              placeholder={t.yearsOfExperiencePlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      );
+    };
+
+    const renderLinkedInCustomization = () => {
+      const t = translations.professionalDocuments.linkedinConfig;
+      return (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+            <h3 className="text-lg font-medium text-purple-900 mb-2">
+              {t.title}
+            </h3>
+            <p className="text-sm text-purple-700">
+              {translations.professionalDocuments.description}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.targetIndustry}
+            </label>
+            <input
+              type="text"
+              value={preferences.targetIndustry || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, targetIndustry: e.target.value }))}
+              placeholder={t.targetIndustryPlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.keySkills}
+            </label>
+            <input
+              type="text"
+              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join(', ') : (preferences.keySkills || '')}
+              onChange={(e) => {
+                const skills = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+                setPreferences(prev => ({ ...prev, keySkills: skills }));
+              }}
+              placeholder={t.keySkillsPlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.achievements}
+            </label>
+            <textarea
+              value={Array.isArray(preferences.achievements) ? preferences.achievements.join('\n') : (preferences.achievements || '')}
+              onChange={(e) => {
+                const achievements = e.target.value.split('\n').filter(a => a.trim());
+                setPreferences(prev => ({ ...prev, achievements: achievements }));
+              }}
+              placeholder={t.achievementsPlaceholder}
+              rows={4}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      );
+    };
+
+    const renderReferenceLetterCustomization = () => {
+      const t = translations.professionalDocuments.referenceLetterConfig;
+      return (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+            <h3 className="text-lg font-medium text-purple-900 mb-2">
+              {t.title}
+            </h3>
+            <p className="text-sm text-purple-700">
+              {translations.professionalDocuments.description}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.recipientName}
+            </label>
+            <input
+              type="text"
+              value={preferences.recipientName || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, recipientName: e.target.value }))}
+              placeholder={t.recipientNamePlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.recipientRole}
+            </label>
+            <input
+              type="text"
+              value={preferences.recipientRole || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, recipientRole: e.target.value }))}
+              placeholder={t.recipientRolePlaceholder}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.relationship}
+            </label>
+            <textarea
+              value={preferences.relationship || ''}
+              onChange={(e) => setPreferences(prev => ({ ...prev, relationship: e.target.value }))}
+              placeholder={t.relationshipPlaceholder}
+              rows={4}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+          <h3 className="text-lg font-medium text-purple-900 mb-2">
+            {translations.professionalDocuments.title}
+          </h3>
+          <p className="text-sm text-purple-700">
+            {translations.professionalDocuments.description}
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {translations.professionalDocuments.documentType}
+          </label>
+          <select
+            value={documentType}
+            onChange={(e) => setPreferences(prev => ({ ...prev, documentType: e.target.value as any }))}
+            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          >
+            <option value="email">{language === 'no' ? 'E-post' : 'Email'}</option>
+            <option value="cv">{language === 'no' ? 'CV' : 'CV / Resume'}</option>
+            <option value="job-application">{language === 'no' ? 'Jobbsøknad' : 'Job Application'}</option>
+            <option value="linkedin-profile">{language === 'no' ? 'LinkedIn-profil' : 'LinkedIn Profile'}</option>
+            <option value="reference-letter">{language === 'no' ? 'Referansebrev' : 'Reference Letter'}</option>
+          </select>
+        </div>
+
+        {documentType === 'email' && renderEmailCustomization()}
+        {documentType === 'cv' && renderCVCustomization()}
+        {documentType === 'job-application' && renderJobApplicationCustomization()}
+        {documentType === 'linkedin-profile' && renderLinkedInCustomization()}
+        {documentType === 'reference-letter' && renderReferenceLetterCustomization()}
+      </div>
+    );
+  };
+
   const renderScriptGeneratorCustomization = () => {
     // Determine platform category
     const shortVideoPlatforms = ['tiktok', 'instagram-reels', 'youtube-shorts'];
@@ -725,7 +1285,8 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
         {selectedType === 'meeting' && renderMeetingCustomization()}
         {selectedType === 'content-creator' && renderScriptGeneratorCustomization()}
         {selectedType === 'article' && renderArticleCustomization()}
-        {selectedType !== 'biography' && selectedType !== 'tasks' && selectedType !== 'meeting' && selectedType !== 'content-creator' && selectedType !== 'article' && renderDefaultCustomization()}
+        {selectedType === 'professional-documents' && renderProfessionalDocumentsCustomization()}
+        {selectedType !== 'biography' && selectedType !== 'tasks' && selectedType !== 'meeting' && selectedType !== 'content-creator' && selectedType !== 'article' && selectedType !== 'professional-documents' && renderDefaultCustomization()}
 
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -743,6 +1304,8 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
                 ? 'bg-red-500 hover:bg-red-600'
                 : selectedType === 'article'
                 ? 'bg-orange-500 hover:bg-orange-600'
+                : selectedType === 'professional-documents'
+                ? 'bg-purple-500 hover:bg-purple-600'
                 : 'bg-purple-500 hover:bg-purple-600'
           }`}
         >

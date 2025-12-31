@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ListTodo, Users, BookOpen, Newspaper, ArrowLeft, Video } from 'lucide-react';
+import { ListTodo, Users, BookOpen, Newspaper, ArrowLeft, Video, FileText } from 'lucide-react';
 import { TranscriptionMode } from '../types';
 
 interface ModeIndicatorProps {
@@ -36,6 +36,12 @@ const getModeConfig = (mode: TranscriptionMode | null, language: string) => {
         name: 'Content Creator', 
         color: 'red',
         description: 'Transform your voice into engaging content for social media platforms'
+      },
+      'professional-documents': { 
+        icon: FileText, 
+        name: 'Professional Documents', 
+        color: 'purple',
+        description: 'Generate professional documents from your audio recordings'
       }
     },
     no: {
@@ -62,6 +68,12 @@ const getModeConfig = (mode: TranscriptionMode | null, language: string) => {
         name: 'Innholdsproduksjon', 
         color: 'red',
         description: 'Gjør stemmen din om til engasjerende innhold for sosiale medier'
+      },
+      'professional-documents': { 
+        icon: FileText, 
+        name: 'Profesjonelle Dokumenter', 
+        color: 'purple',
+        description: 'Generer profesjonelle dokumenter fra lydopptakene dine'
       }
     }
   };
