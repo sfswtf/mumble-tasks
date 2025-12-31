@@ -17,11 +17,6 @@ max_rows = 1000
 [db]
 # Port to use for the local database URL.
 port = 54322
-# External port used when self-hosting Supabase via docker-compose.
-external_port = 54322
-# Schemas to expose in your API. Tables, views and stored procedures in this schema will get API endpoints.
-# public and storage are always included.
-schemas = ["public", "storage", "graphql_public"]
 
 [realtime]
 enabled = true
@@ -109,8 +104,4 @@ redirect_uri = ""
 # or any other third-party OIDC providers.
 url = ""
 
-[edge_functions]
-enabled = true
-# Configure one of the supported request policies: `oneshot`, `per_worker`.
-# Use `oneshot` for hot reload, or `per_worker` for load testing.
-inspector_port = 8083
+[functions]

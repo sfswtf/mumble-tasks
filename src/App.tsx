@@ -91,7 +91,7 @@ function App() {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
   const [showFAQ, setShowFAQ] = useState(false);
-  
+
   // Handle URL-based routing for FAQ
   useEffect(() => {
     if (window.location.pathname === '/faq') {
@@ -106,7 +106,7 @@ function App() {
         setShowFAQ(true);
       } else {
         setShowFAQ(false);
-      }
+  }
     };
 
     window.addEventListener('popstate', handlePopState);

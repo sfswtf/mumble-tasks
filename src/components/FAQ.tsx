@@ -616,7 +616,7 @@ const FAQ: React.FC<FAQProps> = ({ language, onClose }) => {
                     <button
                       onClick={() => toggleSection(sectionKey)}
                       className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-100 transition-colors"
-                    >
+                  >
                       <div className="flex items-center space-x-3">
                       <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
                         {sectionIcons[sectionKey as keyof typeof sectionIcons]}
