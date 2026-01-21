@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Settings, Palette, Users, FileText, MessageSquare } from 'lucide-react';
 import { BiographyPreferences } from '../types';
@@ -13,6 +13,7 @@ interface BiographyCustomizationProps {
   selectedType: string;
   platform?: string;
   language?: string;
+  initialPreferences?: Partial<BiographyPreferences>;
 }
 
 const getCustomizationTranslations = (language: string) => {
@@ -320,8 +321,14 @@ const TASK_TYPES = [
   { value: 'meal', label: 'Meal Planning', description: 'Plan meals and create shopping lists' }
 ];
 
-export default function BiographyCustomization({ onCustomize, selectedType, platform, language }: BiographyCustomizationProps) {
-  const [preferences, setPreferences] = useState<BiographyPreferences>({
+export default function BiographyCustomization({
+  onCustomize,
+  selectedType,
+  platform,
+  language,
+  initialPreferences
+}: BiographyCustomizationProps) {
+  const baseDefaults = useMemo<BiographyPreferences>(() => ({
     tone: '',
     style: '',
     audience: '',
@@ -330,8 +337,15 @@ export default function BiographyCustomization({ onCustomize, selectedType, plat
     taskType: '',
     promptMode: 'initial',
     platform: platform
-  });
+  }), [platform]);
+
+  const [preferences, setPreferences] = useState<BiographyPreferences>(() => ({
+    ...baseDefaults,
+    ...(initialPreferences || {})
+  }));
   const [previewPrompt, setPreviewPrompt] = useState('');
+  const [showDocumentTypeSelector, setShowDocumentTypeSelector] = useState(false);
+  const lastSelectedTypeRef = useRef<string>(selectedType);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -407,9 +421,36 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
     setPreviewPrompt(prompt);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     generatePreviewPrompt();
   }, [preferences, selectedType, platform, language]);
+
+  // Keep form state stable during typing, but re-hydrate when switching modes or when App provides new initial prefs.
+  useEffect(() => {
+    const isTypeChange = lastSelectedTypeRef.current !== selectedType;
+    lastSelectedTypeRef.current = selectedType;
+
+    setPreferences(prev => {
+      if (isTypeChange) {
+        return {
+          ...baseDefaults,
+          ...(initialPreferences || {})
+        };
+      }
+      return {
+        ...baseDefaults,
+        ...(initialPreferences || {}),
+        ...prev,
+        platform: platform
+      };
+    });
+
+    // Reset document type dropdown UX when entering professional-documents with a preselected doc type.
+    if (selectedType === 'professional-documents' && initialPreferences?.documentType) {
+      setShowDocumentTypeSelector(false);
+    }
+  }, [baseDefaults, initialPreferences, platform, selectedType]);
+
 
   const renderPromptModeSelection = () => (
     <div className="space-y-6 mb-8">
@@ -736,7 +777,9 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
 
   const renderProfessionalDocumentsCustomization = () => {
     const translations = getCustomizationTranslations(language || 'en');
-    const documentType = preferences.documentType || 'email';
+    const preselectedDocumentType = initialPreferences?.documentType;
+    const documentType = (preferences.documentType || preselectedDocumentType || 'email') as NonNullable<BiographyPreferences['documentType']>;
+    const hasPreselectedDocumentType = !!preselectedDocumentType;
     
     const renderEmailCustomization = () => {
       const t = translations.professionalDocuments.emailConfig;
@@ -879,16 +922,22 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t.keySkills}
             </label>
-            <input
-              type="text"
-              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join(', ') : (preferences.keySkills || '')}
+            <textarea
+              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join('\n') : (preferences.keySkills || '')}
               onChange={(e) => {
-                const skills = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+                const skills = e.target.value
+                  .split(/[,;\n]+/)
+                  .map(s => s.trim())
+                  .filter(Boolean);
                 setPreferences(prev => ({ ...prev, keySkills: skills }));
               }}
               placeholder={t.keySkillsPlaceholder}
+              rows={3}
               className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
+            <p className="mt-1 text-xs text-gray-500">
+              {language === 'no' ? 'Tips: skill med komma, semikolon eller linjeskift.' : 'Tip: separate with commas, semicolons, or new lines.'}
+            </p>
           </div>
 
           <div>
@@ -953,16 +1002,22 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t.keySkills}
             </label>
-            <input
-              type="text"
-              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join(', ') : (preferences.keySkills || '')}
+            <textarea
+              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join('\n') : (preferences.keySkills || '')}
               onChange={(e) => {
-                const skills = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+                const skills = e.target.value
+                  .split(/[,;\n]+/)
+                  .map(s => s.trim())
+                  .filter(Boolean);
                 setPreferences(prev => ({ ...prev, keySkills: skills }));
               }}
               placeholder={t.keySkillsPlaceholder}
+              rows={3}
               className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
+            <p className="mt-1 text-xs text-gray-500">
+              {language === 'no' ? 'Tips: skill med komma, semikolon eller linjeskift.' : 'Tip: separate with commas, semicolons, or new lines.'}
+            </p>
           </div>
 
           <div>
@@ -1027,16 +1082,22 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t.keySkills}
             </label>
-            <input
-              type="text"
-              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join(', ') : (preferences.keySkills || '')}
+            <textarea
+              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join('\n') : (preferences.keySkills || '')}
               onChange={(e) => {
-                const skills = e.target.value.split(',').map(s => s.trim()).filter(s => s);
+                const skills = e.target.value
+                  .split(/[,;\n]+/)
+                  .map(s => s.trim())
+                  .filter(Boolean);
                 setPreferences(prev => ({ ...prev, keySkills: skills }));
               }}
               placeholder={t.keySkillsPlaceholder}
+              rows={3}
               className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
+            <p className="mt-1 text-xs text-gray-500">
+              {language === 'no' ? 'Tips: skill med komma, semikolon eller linjeskift.' : 'Tip: separate with commas, semicolons, or new lines.'}
+            </p>
           </div>
 
           <div>
@@ -1125,20 +1186,44 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {translations.professionalDocuments.documentType}
-          </label>
-          <select
-            value={documentType}
-            onChange={(e) => setPreferences(prev => ({ ...prev, documentType: e.target.value as any }))}
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            <option value="email">{language === 'no' ? 'E-post' : 'Email'}</option>
-            <option value="cv">{language === 'no' ? 'CV' : 'CV / Resume'}</option>
-            <option value="job-application">{language === 'no' ? 'Jobbsøknad' : 'Job Application'}</option>
-            <option value="linkedin-profile">{language === 'no' ? 'LinkedIn-profil' : 'LinkedIn Profile'}</option>
-            <option value="reference-letter">{language === 'no' ? 'Referansebrev' : 'Reference Letter'}</option>
-          </select>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium text-gray-700">
+              {translations.professionalDocuments.documentType}
+            </label>
+            {hasPreselectedDocumentType && !showDocumentTypeSelector && (
+              <button
+                type="button"
+                onClick={() => setShowDocumentTypeSelector(true)}
+                className="text-sm text-purple-600 hover:text-purple-800"
+              >
+                {language === 'no' ? 'Endre' : 'Change'}
+              </button>
+            )}
+          </div>
+
+          {hasPreselectedDocumentType && !showDocumentTypeSelector ? (
+            <div className="px-4 py-3 rounded-md border border-purple-200 bg-purple-50 text-purple-900">
+              <span className="font-medium">
+                {documentType === 'email' ? (language === 'no' ? 'E-post' : 'Email') :
+                 documentType === 'cv' ? (language === 'no' ? 'CV' : 'CV / Resume') :
+                 documentType === 'job-application' ? (language === 'no' ? 'Jobbsøknad' : 'Job Application') :
+                 documentType === 'linkedin-profile' ? (language === 'no' ? 'LinkedIn-profil' : 'LinkedIn Profile') :
+                 (language === 'no' ? 'Referansebrev' : 'Reference Letter')}
+              </span>
+            </div>
+          ) : (
+            <select
+              value={documentType}
+              onChange={(e) => setPreferences(prev => ({ ...prev, documentType: e.target.value as any }))}
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            >
+              <option value="email">{language === 'no' ? 'E-post' : 'Email'}</option>
+              <option value="cv">{language === 'no' ? 'CV' : 'CV / Resume'}</option>
+              <option value="job-application">{language === 'no' ? 'Jobbsøknad' : 'Job Application'}</option>
+              <option value="linkedin-profile">{language === 'no' ? 'LinkedIn-profil' : 'LinkedIn Profile'}</option>
+              <option value="reference-letter">{language === 'no' ? 'Referansebrev' : 'Reference Letter'}</option>
+            </select>
+          )}
         </div>
 
         {documentType === 'email' && renderEmailCustomization()}

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Play, Mic } from 'lucide-react';
 import UploadSection from './UploadSection';
 import RecordAudio from './RecordAudio';
+import { ProfileContext } from '../types';
+import { ProfileContextForm } from './ProfileContextForm';
 
 interface StepWizardProps {
   currentStep: 'language' | 'record' | 'process';
@@ -13,6 +15,8 @@ interface StepWizardProps {
   onProcess: () => void;
   isProcessing: boolean;
   mode: 'tasks' | 'meeting';
+  profileContext: ProfileContext;
+  onProfileContextChange: (next: ProfileContext) => void;
 }
 
 export default function StepWizard({
@@ -23,7 +27,9 @@ export default function StepWizard({
   onFileSelect,
   onProcess,
   isProcessing,
-  mode
+  mode,
+  profileContext,
+  onProfileContextChange
 }: StepWizardProps) {
   const [error, setError] = useState<string | null>(null);
 
@@ -103,6 +109,12 @@ export default function StepWizard({
             className="space-y-8"
             id="record-upload-section"
           >
+            <ProfileContextForm
+              value={profileContext}
+              onChange={onProfileContextChange}
+              language={selectedLanguage}
+            />
+
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
                 {selectedLanguage === 'en' ? 'Add Your Audio' : 'Legg til Lyden Din'}

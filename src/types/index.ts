@@ -119,6 +119,15 @@ export interface DraftTranscription {
 
 export type TranscriptionMode = 'tasks' | 'meeting' | 'content-creator' | 'article' | 'professional-documents';
 
+export interface ProfileContext {
+  yourName?: string;
+  yourCompany?: string;
+  yourTitle?: string;
+  recipientName?: string;
+  recipientCompany?: string;
+  preferredTone?: string;
+}
+
 export interface ErrorMessageProps {
   message: string;
   onRetry?: () => Promise<void>;

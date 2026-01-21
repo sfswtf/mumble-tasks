@@ -1,4 +1,4 @@
-import { BiographyContent } from '../types';
+import { BiographyContent, ProfileContext } from '../types';
 
 // Approximate token count (rough estimate: 1 token ≈ 4 characters)
 function estimateTokenCount(text: string): number {
@@ -28,6 +28,117 @@ function chunkText(text: string, maxTokens: number = 15000): string[] {
   }
   
   return chunks;
+}
+
+function getPlaceholders(language: string) {
+  return language === 'no'
+    ? {
+        yourName: 'Ditt navn',
+        yourCompany: 'Ditt selskap',
+        yourTitle: 'Din rolle',
+        recipientName: 'Mottakers navn',
+        recipientCompany: 'Mottakers selskap',
+      }
+    : {
+        yourName: 'Your name',
+        yourCompany: 'Your company',
+        yourTitle: 'Your title',
+        recipientName: 'Recipient name',
+        recipientCompany: 'Recipient company',
+      };
+}
+
+function normalizeProfileContext(ctx: ProfileContext | undefined, language: string) {
+  const p = getPlaceholders(language);
+  const trimOrEmpty = (v?: string) => (typeof v === 'string' ? v.trim() : '');
+  const pick = (v?: string, fallback?: string) => (trimOrEmpty(v) ? trimOrEmpty(v) : (fallback || ''));
+
+  return {
+    yourName: pick(ctx?.yourName, p.yourName),
+    yourCompany: pick(ctx?.yourCompany, p.yourCompany),
+    yourTitle: pick(ctx?.yourTitle, p.yourTitle),
+    recipientName: pick(ctx?.recipientName, p.recipientName),
+    recipientCompany: pick(ctx?.recipientCompany, p.recipientCompany),
+    preferredTone: trimOrEmpty(ctx?.preferredTone),
+    placeholders: p,
+  };
+}
+
+function buildNoHallucinationRules(language: string) {
+  if (language === 'no') {
+    return `FAKTA-REGLER (MÅ FØLGES):
+- Ikke finn på navn, selskap, titler, steder, datoer, roller eller annen bakgrunnsinformasjon.
+- Bruk kun informasjon som finnes i (a) profilkontekst under, eller (b) selve transkripsjonen.
+- Hvis info mangler: behold plassholdere (f.eks. "Ditt navn", "Ditt selskap") eller la felt stå generisk. Ikke fyll inn fiktive detaljer.
+- Bevar alle koder/ID-er nøyaktig (f.eks. "R-12345", saksnummer, referanser, e-postadresser). Ikke endre, forkort eller fjern dem.`;
+  }
+  return `FACT RULES (MUST FOLLOW):
+- Do not invent names, companies, titles, locations, dates, roles, or background details.
+- Use only information from (a) the profile context below, or (b) the transcription itself.
+- If info is missing: keep placeholders (e.g. "Your name", "Your company") or leave fields generic. Do not add fictional details.
+- Preserve all codes/IDs exactly (e.g. "R-12345", case numbers, references, emails). Do not alter, shorten, or remove them.`;
+}
+
+function buildProfileContextBlock(language: string, profileContext?: ProfileContext) {
+  const ctx = normalizeProfileContext(profileContext, language);
+  const toneLine = ctx.preferredTone
+    ? (language === 'no' ? `Ønsket tone: ${ctx.preferredTone}` : `Preferred tone: ${ctx.preferredTone}`)
+    : (language === 'no' ? 'Ønsket tone: (ikke oppgitt)' : 'Preferred tone: (not provided)');
+
+  return language === 'no'
+    ? `PROFILKONTEKST (bruk som standardverdier når relevant):
+- Avsender (navn): ${ctx.yourName}
+- Avsender (selskap): ${ctx.yourCompany}
+- Avsender (rolle): ${ctx.yourTitle}
+- Mottaker (navn): ${ctx.recipientName}
+- Mottaker (selskap): ${ctx.recipientCompany}
+- ${toneLine}
+
+VIKTIG: Hvis en verdi er en plassholder (f.eks. "Ditt navn"), behold den nøyaktig som skrevet.`
+    : `PROFILE CONTEXT (use as defaults when relevant):
+- Sender (name): ${ctx.yourName}
+- Sender (company): ${ctx.yourCompany}
+- Sender (title): ${ctx.yourTitle}
+- Recipient (name): ${ctx.recipientName}
+- Recipient (company): ${ctx.recipientCompany}
+- ${toneLine}
+
+IMPORTANT: If a value is a placeholder (e.g. "Your name"), keep it exactly as written.`;
+}
+
+async function throwGenerateApiError(res: Response, language: string, fallbackMessage: string): Promise<never> {
+  const status = res.status;
+  let data: any = {};
+  try {
+    data = await res.json();
+  } catch {
+    // ignore
+  }
+
+  const err = data?.error;
+  const code = typeof err === 'object' && err ? err.code : undefined;
+  const requestId = typeof err === 'object' && err ? err.requestId : undefined;
+  const upstreamType = typeof err === 'object' && err ? err.upstreamType : undefined;
+
+  let message =
+    typeof err === 'string'
+      ? err
+      : typeof err?.message === 'string'
+        ? err.message
+        : fallbackMessage;
+
+  // Friendly overload messaging
+  if (status === 529 || code === 'anthropic_overloaded' || upstreamType === 'overloaded_error') {
+    message = language === 'no'
+      ? 'Claude er overbelastet akkurat nå. Vent litt og prøv igjen.'
+      : 'Claude is overloaded right now. Please wait a moment and try again.';
+  }
+
+  const error = new Error(message) as any;
+  error.code = code || (status === 529 ? 'anthropic_overloaded' : undefined);
+  error.status = status;
+  error.requestId = requestId;
+  throw error;
 }
 
 export async function transcribeAudio(
@@ -138,8 +249,7 @@ async function processChunk(
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || 'Failed to generate content');
+    await throwGenerateApiError(response, language, 'Failed to generate content');
   }
 
   const data = await response.json();
@@ -211,6 +321,7 @@ export async function generateSummaryAndTasks(
     // Report initial progress
     onProgress?.(0);
 
+    const noHallucination = buildNoHallucinationRules(language);
     const systemPrompt = language === 'no'
       ? `Du er en personlig assistent som analyserer talenotater og lager sammendrag. For følgende transkripsjon, gi:
         1. Et detaljert sammendrag som fanger opp alle viktige punkter og detaljer
@@ -232,7 +343,9 @@ export async function generateSummaryAndTasks(
         Oppgaver:
         - [oppgave 1 i første person]
         - [oppgave 2 i første person]
-        osv.`
+        osv.
+
+${noHallucination}`
       : `You are a personal assistant that analyzes voice memos and creates comprehensive summaries. For the following transcription, provide:
         1. A detailed executive summary that captures all important points and details
         2. A complete list of all specific, actionable tasks that YOU need to do (write in first person: "You need to...", "You should...", "You must...")
@@ -253,7 +366,9 @@ export async function generateSummaryAndTasks(
         Tasks:
         - [task 1 in second person]
         - [task 2 in second person]
-        etc.`;
+        etc.
+
+${noHallucination}`;
 
     // Report progress for API call preparation
     onProgress?.(0.3);
@@ -268,8 +383,7 @@ export async function generateSummaryAndTasks(
     });
 
     if (!completionRes.ok) {
-      const errorData = await completionRes.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to generate summary and tasks');
+      await throwGenerateApiError(completionRes, language, 'Failed to generate summary and tasks');
     }
 
     const completion = await completionRes.json();
@@ -315,12 +429,15 @@ export async function generatePromptContent(
   type: string,
   customization: any,
   language: string = 'en',
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  profileContext?: ProfileContext
 ): Promise<BiographyContent> {
   // Report initial progress
   onProgress?.(0);
 
   let systemPrompt = '';
+  const noHallucination = buildNoHallucinationRules(language);
+  const profileBlock = buildProfileContextBlock(language, profileContext);
   
   // Language instruction for output
   const languageInstruction = language === 'no' 
@@ -337,7 +454,7 @@ export async function generatePromptContent(
         const hookType = customization.hookType || 'question';
         const callToAction = customization.callToAction || 'follow';
         
-        systemPrompt = `ROLE: You are an expert viral short-form video strategist and script writer with proven success in creating engaging content that stops the scroll and drives action.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are an expert viral short-form video strategist and script writer with proven success in creating engaging content that stops the scroll and drives action.
 
 TASK: Create a production-ready ${duration}-second script based on the provided audio content using proven viral engagement formulas.
 
@@ -400,7 +517,7 @@ Create a complete, word-for-word script that delivers maximum value and engageme
         const avgMinutes = Math.round((minMinutes + maxMinutes) / 2);
         const totalWords = avgMinutes * 150;
         
-        systemPrompt = `ROLE: You are a YouTube algorithm expert and professional script writer with deep understanding of viewer psychology and platform optimization.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a YouTube algorithm expert and professional script writer with deep understanding of viewer psychology and platform optimization.
 
 TASK: Create a comprehensive ${targetLength}-minute video script that maximizes watch time, engagement, and algorithm performance.
 
@@ -480,7 +597,7 @@ Create a complete script that maximizes viewer value while optimizing for YouTub
         const postLength = customization.postLength || 'medium';
         const targetWords = postLength === 'short' ? '100-200' : postLength === 'medium' ? '200-400' : '400-600';
         
-        systemPrompt = `ROLE: You are a LinkedIn thought leader and professional content strategist with expertise in B2B engagement and professional networking.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a LinkedIn thought leader and professional content strategist with expertise in B2B engagement and professional networking.
 
 TASK: Transform the audio content into a high-engagement LinkedIn post that drives meaningful business conversations and establishes thought leadership.
 
@@ -554,7 +671,7 @@ Transform the audio insights into professional content that establishes thought 
         const audienceType = customization.audienceType || 'business_page';
         const engagementGoal = customization.engagementGoal || 'discussion';
         
-        systemPrompt = `ROLE: You are a Facebook engagement specialist with expertise in viral content creation and community building.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a Facebook engagement specialist with expertise in viral content creation and community building.
 
 TASK: Transform the audio content into a highly shareable Facebook post that drives meaningful community interaction and engagement.
 
@@ -629,7 +746,7 @@ Create authentic, engaging content that builds community and drives meaningful c
         // Modern Twitter Thread Strategy
         const threadLength = customization.threadLength || '5-8';
         
-        systemPrompt = `ROLE: You are a Twitter thread strategist and viral content creator with proven expertise in creating engaging, shareable threads.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a Twitter thread strategist and viral content creator with proven expertise in creating engaging, shareable threads.
 
 TASK: Transform the audio content into a compelling Twitter thread that maximizes engagement, retweets, and follower growth.
 
@@ -715,7 +832,7 @@ Create a thread that delivers maximum value while optimizing for Twitter's engag
         const wordCount = targetLength === 'short' ? '1000-1500' : 
                          targetLength === 'medium' ? '2000-3000' : '3500-5000';
         
-        systemPrompt = `ROLE: You are a professional blog content strategist and SEO expert with proven success in creating high-ranking, valuable content.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional blog content strategist and SEO expert with proven success in creating high-ranking, valuable content.
 
 TASK: Transform the audio content into a comprehensive, SEO-optimized blog post that ranks well in search engines and provides exceptional reader value.
 
@@ -802,7 +919,7 @@ Transform the audio content into a comprehensive blog post that provides excepti
 
       } else {
         // Enhanced fallback for other platforms
-        systemPrompt = `ROLE: You are a professional content strategist with specialized expertise in ${platform} content creation and audience engagement.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional content strategist with specialized expertise in ${platform} content creation and audience engagement.
 
 TASK: Transform the provided audio content into platform-optimized, engaging material that drives measurable results and audience growth.
 
@@ -841,7 +958,7 @@ Create comprehensive, platform-native content that maximizes engagement and deli
       const wordCount = targetLength === 'short' ? '800-1200' : 
                        targetLength === 'medium' ? '1500-2500' : '3000-5000';
       
-      systemPrompt = `ROLE: You are a professional ${articleType.replace('_', ' ')} writer with expertise in creating compelling, well-researched content that engages readers and achieves editorial goals.
+      systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional ${articleType.replace('_', ' ')} writer with expertise in creating compelling, well-researched content that engages readers and achieves editorial goals.
 
 TASK: Create a comprehensive ${targetLength} length article (${wordCount} words) based on the provided audio content that meets professional publication standards.
 
@@ -935,7 +1052,7 @@ Create a well-researched, engaging article that thoroughly explores the topic di
 
     case 'prompt':
       if (customization.promptMode === 'initial') {
-        systemPrompt = `You are a prompt engineering expert. Based on the user's description, create 3 different variations of clear, effective prompts for ${customization.promptType}. 
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nYou are a prompt engineering expert. Based on the user's description, create 3 different variations of clear, effective prompts for ${customization.promptType}. 
         
         Format the output exactly like this:
 
@@ -950,7 +1067,7 @@ Create a well-researched, engaging article that thoroughly explores the topic di
         • [Tip 2]
         • [Tip 3]`;
       } else {
-        systemPrompt = `ROLE: You are a prompt engineering expert and AI interaction specialist with expertise in refining user-AI communications for optimal results.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a prompt engineering expert and AI interaction specialist with expertise in refining user-AI communications for optimal results.
 
 TASK: Analyze the AI's output and the user's feedback to provide improved guidance and refined responses.
 
@@ -978,7 +1095,7 @@ OUTPUT: Provide comprehensive guidance that enhances the user's understanding an
       break;
       
     case 'meeting':
-      systemPrompt = `ROLE: You are a professional meeting notes expert and conversation analyst with expertise in multi-speaker dialogue analysis and action item extraction.
+      systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional meeting notes expert and conversation analyst with expertise in multi-speaker dialogue analysis and action item extraction.
 
 TASK: Analyze the meeting recording to identify speakers, extract key information, and create actionable meeting documentation.
 
@@ -1018,7 +1135,7 @@ SPEAKER IDENTIFICATION PROCESS: Systematically distinguish between different spe
       break;
       
     case 'tasks':
-      systemPrompt = `ROLE: You are a task organization expert and productivity specialist with expertise in creating actionable, prioritized task lists.
+      systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a task organization expert and productivity specialist with expertise in creating actionable, prioritized task lists.
 
 TASK: Convert the audio content into a structured ${customization.taskType} list that maximizes productivity and clarity.
 
@@ -1035,15 +1152,16 @@ For each task, provide:
 
     case 'professional-documents':
       const documentType = customization.documentType || 'email';
+      const ctx = normalizeProfileContext(profileContext, language);
       
       if (documentType === 'email') {
         const emailType = customization.emailType || 'professional';
-        const recipientName = customization.recipientName || '';
+        const recipientName = customization.recipientName || ctx.recipientName || '';
         const recipientRole = customization.recipientRole || '';
         const emailSubject = customization.emailSubject || '';
         const emailPurpose = customization.emailPurpose || '';
         
-        systemPrompt = `ROLE: You are a professional email writing expert with expertise in business communication and professional correspondence.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional email writing expert with expertise in business communication and professional correspondence.
 
 TASK: Create a professional ${emailType} email based on the provided audio content.
 
@@ -1082,7 +1200,7 @@ OUTPUT: Create a complete, ready-to-send professional email that effectively com
         const keySkills = Array.isArray(customization.keySkills) ? customization.keySkills.join(', ') : (customization.keySkills || '');
         const achievements = Array.isArray(customization.achievements) ? customization.achievements.join('\n') : (customization.achievements || '');
         
-        systemPrompt = `ROLE: You are a professional CV/resume writing expert and career consultant with extensive experience in creating compelling, ATS-friendly resumes that get results.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional CV/resume writing expert and career consultant with extensive experience in creating compelling, ATS-friendly resumes that get results.
 
 TASK: Create a comprehensive CV/resume based on the provided audio content using the ${cvFormat} format.
 
@@ -1154,7 +1272,7 @@ OUTPUT: Create a complete, professional CV that effectively presents the candida
         const achievements = Array.isArray(customization.achievements) ? customization.achievements.join('\n') : (customization.achievements || '');
         const yearsOfExperience = customization.yearsOfExperience || '';
         
-        systemPrompt = `ROLE: You are a professional job application and cover letter writing expert with proven success in helping candidates secure interviews and job offers.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional job application and cover letter writing expert with proven success in helping candidates secure interviews and job offers.
 
 TASK: Create a complete job application package including a compelling cover letter based on the provided audio content.
 
@@ -1225,7 +1343,7 @@ OUTPUT: Create a complete, compelling job application package that effectively c
         const keySkills = Array.isArray(customization.keySkills) ? customization.keySkills.join(', ') : (customization.keySkills || '');
         const achievements = Array.isArray(customization.achievements) ? customization.achievements.join('\n') : (customization.achievements || '');
         
-        systemPrompt = `ROLE: You are a LinkedIn profile optimization expert with deep understanding of how to create profiles that attract recruiters, build professional networks, and establish thought leadership.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a LinkedIn profile optimization expert with deep understanding of how to create profiles that attract recruiters, build professional networks, and establish thought leadership.
 
 TASK: Create professional LinkedIn profile content based on the provided audio content, optimized for search visibility and engagement.
 
@@ -1296,11 +1414,11 @@ LENGTH:
 
 OUTPUT: Create comprehensive LinkedIn profile content that effectively presents the professional's background, skills, and achievements from the audio content, optimized for LinkedIn's search algorithm and professional networking.`;
       } else if (documentType === 'reference-letter') {
-        const recipientName = customization.recipientName || '';
+        const recipientName = customization.recipientName || ctx.recipientName || '';
         const recipientRole = customization.recipientRole || '';
         const relationship = customization.relationship || '';
         
-        systemPrompt = `ROLE: You are a professional reference letter writing expert with expertise in creating compelling, credible recommendation letters that help candidates stand out.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional reference letter writing expert with expertise in creating compelling, credible recommendation letters that help candidates stand out.
 
 TASK: Create a professional reference letter based on the provided audio content.
 
@@ -1381,7 +1499,7 @@ LENGTH: 200-350 words (one page)
 OUTPUT: Create a complete, professional reference letter that effectively recommends the person based on the information provided in the audio content, following proper business letter format.`;
       } else {
         // Fallback for unknown document types
-        systemPrompt = `ROLE: You are a professional document writing expert with expertise in creating high-quality professional documents.
+        systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional document writing expert with expertise in creating high-quality professional documents.
 
 TASK: Create a professional ${documentType} document based on the provided audio content.
 
@@ -1397,7 +1515,7 @@ OUTPUT: Create a complete, professional document that effectively presents the i
       break;
       
     default:
-      systemPrompt = `ROLE: You are a professional content strategist with expertise in ${type} creation and audience engagement.
+      systemPrompt = `${noHallucination}\n\n${profileBlock}\n\nROLE: You are a professional content strategist with expertise in ${type} creation and audience engagement.
 
 TASK: Transform the audio content into well-structured ${type} format that meets the specified requirements and maximizes audience engagement.
 
@@ -1436,8 +1554,7 @@ OUTPUT: Deliver polished, professional content that exceeds expectations and dri
     });
 
     if (!completionRes.ok) {
-      const errorData = await completionRes.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to generate content');
+      await throwGenerateApiError(completionRes, language, 'Failed to generate content');
     }
 
     const completion = await completionRes.json();

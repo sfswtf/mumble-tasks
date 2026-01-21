@@ -20,7 +20,7 @@ import { generateTitle } from './utils/titleGenerator';
 import { useErrorHandler } from './hooks/useErrorHandler';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import ErrorMessage from './components/ErrorMessage';
-import { TranscriptionMode, BiographyPreferences, DraftTranscription, TranscriptionRecord } from './types';
+import { TranscriptionMode, BiographyPreferences, DraftTranscription, TranscriptionRecord, ProfileContext } from './types';
 import { SearchBar } from './components/SearchBar';
 import { setUserContext, addBreadcrumb } from './lib/sentry';
 
@@ -87,6 +87,7 @@ function App() {
   });
   const [results, setResults] = useState<any>(null);
   const [draftTranscription, setDraftTranscription] = useLocalStorage<DraftTranscription | null>('draft_transcription', null);
+  const [profileContext, setProfileContext] = useLocalStorage<ProfileContext>('profile_context', {});
   const [searchResults, setSearchResults] = useState<Array<{ id: string; title: string; type: string; createdAt: string }>>([]);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [resetKey, setResetKey] = useState(0);
@@ -381,7 +382,8 @@ function App() {
           selectedLanguage,
           (contentProgress: number) => {
             setProgress(70 + (contentProgress * 30));
-          }
+          },
+          profileContext
         );
 
         setProgress(100);
@@ -438,7 +440,8 @@ function App() {
           selectedLanguage,
           (contentProgress: number) => {
             setProgress(70 + (contentProgress * 30));
-          }
+          },
+          profileContext
         );
 
         setProgress(100);
@@ -495,7 +498,8 @@ function App() {
           (contentProgress: number) => {
             // Map content progress to 70-100% range
             setProgress(70 + (contentProgress * 30));
-          }
+          },
+          profileContext
         );
 
         setProgress(100);
@@ -857,6 +861,7 @@ function App() {
                     selectedType={biographyType}
                     platform={customization.platform}
                     language={selectedLanguage}
+                    initialPreferences={customization}
                   />
                 </div>
               )}
@@ -872,6 +877,8 @@ function App() {
                     onProcess={handleProcess}
                     isProcessing={isProcessing}
                     mode={biographyType === 'tasks' ? 'tasks' : 'meeting'}
+                    profileContext={profileContext || {}}
+                    onProfileContextChange={setProfileContext}
                   />
                 </div>
               )}
