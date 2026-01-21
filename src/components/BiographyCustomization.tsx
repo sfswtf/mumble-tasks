@@ -346,9 +346,46 @@ export default function BiographyCustomization({
   const [previewPrompt, setPreviewPrompt] = useState('');
   const [showDocumentTypeSelector, setShowDocumentTypeSelector] = useState(false);
   const lastSelectedTypeRef = useRef<string>(selectedType);
+  const lastProDocTypeRef = useRef<string | null>(null);
+
+  // Keep raw textarea strings for pro-doc fields so the user can type naturally (commas, spaces, trailing newlines).
+  const [keySkillsText, setKeySkillsText] = useState<string>('');
+  const [achievementsText, setAchievementsText] = useState<string>('');
+
+  const activeProDocType = useMemo(() => {
+    if (selectedType !== 'professional-documents') return null;
+    return (preferences.documentType || initialPreferences?.documentType || 'email') as string;
+  }, [selectedType, preferences.documentType, initialPreferences?.documentType]);
+
+  const parseSkills = (raw: string) =>
+    raw
+      .split(/[,;\n]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+  const parseLines = (raw: string) =>
+    raw
+      .split('\n')
+      .map(s => s.trim())
+      .filter(Boolean);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Finalize pro-doc list fields on submit (without disturbing typing UX during input)
+    if (selectedType === 'professional-documents') {
+      const docType = (preferences.documentType || initialPreferences?.documentType || 'email') as any;
+      if (docType === 'cv' || docType === 'job-application' || docType === 'linkedin-profile') {
+        const next = {
+          ...preferences,
+          documentType: docType,
+          keySkills: parseSkills(keySkillsText),
+          achievements: parseLines(achievementsText),
+        };
+        setPreferences(next);
+        onCustomize(next);
+        return;
+      }
+    }
     onCustomize(preferences);
   };
 
@@ -450,6 +487,20 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
       setShowDocumentTypeSelector(false);
     }
   }, [baseDefaults, initialPreferences, platform, selectedType]);
+
+  // Sync raw pro-doc textareas when changing the professional document type.
+  useEffect(() => {
+    if (selectedType !== 'professional-documents') return;
+    if (!activeProDocType) return;
+
+    const isDocTypeChange = lastProDocTypeRef.current !== activeProDocType;
+    if (!isDocTypeChange) return;
+    lastProDocTypeRef.current = activeProDocType;
+
+    // Hydrate from current parsed arrays (if any). Keep empty string if nothing is set.
+    setKeySkillsText(Array.isArray(preferences.keySkills) ? preferences.keySkills.join('\n') : '');
+    setAchievementsText(Array.isArray(preferences.achievements) ? preferences.achievements.join('\n') : '');
+  }, [activeProDocType, preferences.achievements, preferences.keySkills, selectedType]);
 
 
   const renderPromptModeSelection = () => (
@@ -923,14 +974,11 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
               {t.keySkills}
             </label>
             <textarea
-              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join('\n') : (preferences.keySkills || '')}
+              value={keySkillsText}
               onChange={(e) => {
-                const skills = e.target.value
-                  .split(/[,;\n]+/)
-                  .map(s => s.trim())
-                  .filter(Boolean);
-                setPreferences(prev => ({ ...prev, keySkills: skills }));
+                setKeySkillsText(e.target.value);
               }}
+              onBlur={() => setPreferences(prev => ({ ...prev, keySkills: parseSkills(keySkillsText) }))}
               placeholder={t.keySkillsPlaceholder}
               rows={3}
               className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -945,11 +993,9 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
               {t.achievements}
             </label>
             <textarea
-              value={Array.isArray(preferences.achievements) ? preferences.achievements.join('\n') : (preferences.achievements || '')}
-              onChange={(e) => {
-                const achievements = e.target.value.split('\n').filter(a => a.trim());
-                setPreferences(prev => ({ ...prev, achievements: achievements }));
-              }}
+              value={achievementsText}
+              onChange={(e) => setAchievementsText(e.target.value)}
+              onBlur={() => setPreferences(prev => ({ ...prev, achievements: parseLines(achievementsText) }))}
               placeholder={t.achievementsPlaceholder}
               rows={4}
               className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -1003,14 +1049,9 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
               {t.keySkills}
             </label>
             <textarea
-              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join('\n') : (preferences.keySkills || '')}
-              onChange={(e) => {
-                const skills = e.target.value
-                  .split(/[,;\n]+/)
-                  .map(s => s.trim())
-                  .filter(Boolean);
-                setPreferences(prev => ({ ...prev, keySkills: skills }));
-              }}
+              value={keySkillsText}
+              onChange={(e) => setKeySkillsText(e.target.value)}
+              onBlur={() => setPreferences(prev => ({ ...prev, keySkills: parseSkills(keySkillsText) }))}
               placeholder={t.keySkillsPlaceholder}
               rows={3}
               className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -1025,11 +1066,9 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
               {t.achievements}
             </label>
             <textarea
-              value={Array.isArray(preferences.achievements) ? preferences.achievements.join('\n') : (preferences.achievements || '')}
-              onChange={(e) => {
-                const achievements = e.target.value.split('\n').filter(a => a.trim());
-                setPreferences(prev => ({ ...prev, achievements: achievements }));
-              }}
+              value={achievementsText}
+              onChange={(e) => setAchievementsText(e.target.value)}
+              onBlur={() => setPreferences(prev => ({ ...prev, achievements: parseLines(achievementsText) }))}
               placeholder={t.achievementsPlaceholder}
               rows={4}
               className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -1083,14 +1122,9 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
               {t.keySkills}
             </label>
             <textarea
-              value={Array.isArray(preferences.keySkills) ? preferences.keySkills.join('\n') : (preferences.keySkills || '')}
-              onChange={(e) => {
-                const skills = e.target.value
-                  .split(/[,;\n]+/)
-                  .map(s => s.trim())
-                  .filter(Boolean);
-                setPreferences(prev => ({ ...prev, keySkills: skills }));
-              }}
+              value={keySkillsText}
+              onChange={(e) => setKeySkillsText(e.target.value)}
+              onBlur={() => setPreferences(prev => ({ ...prev, keySkills: parseSkills(keySkillsText) }))}
               placeholder={t.keySkillsPlaceholder}
               rows={3}
               className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -1105,11 +1139,9 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
               {t.achievements}
             </label>
             <textarea
-              value={Array.isArray(preferences.achievements) ? preferences.achievements.join('\n') : (preferences.achievements || '')}
-              onChange={(e) => {
-                const achievements = e.target.value.split('\n').filter(a => a.trim());
-                setPreferences(prev => ({ ...prev, achievements: achievements }));
-              }}
+              value={achievementsText}
+              onChange={(e) => setAchievementsText(e.target.value)}
+              onBlur={() => setPreferences(prev => ({ ...prev, achievements: parseLines(achievementsText) }))}
               placeholder={t.achievementsPlaceholder}
               rows={4}
               className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
