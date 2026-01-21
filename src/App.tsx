@@ -862,6 +862,8 @@ function App() {
                     platform={customization.platform}
                     language={selectedLanguage}
                     initialPreferences={customization}
+                    profileContext={profileContext || {}}
+                    onProfileContextChange={setProfileContext}
                   />
                 </div>
               )}
@@ -877,8 +879,6 @@ function App() {
                     onProcess={handleProcess}
                     isProcessing={isProcessing}
                     mode={biographyType === 'tasks' ? 'tasks' : 'meeting'}
-                    profileContext={profileContext || {}}
-                    onProfileContextChange={setProfileContext}
                   />
                 </div>
               )}

@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Settings, Palette, Users, FileText, MessageSquare } from 'lucide-react';
-import { BiographyPreferences } from '../types';
+import { BiographyPreferences, ProfileContext } from '../types';
 import { Tooltip } from './Tooltip';
 import { ShortVideoCustomization } from './ShortVideoCustomization';
 import { YouTubeVideoCustomization } from './YouTubeVideoCustomization';
 import { LinkedInPostCustomization } from './LinkedInPostCustomization';
 import { FacebookPostCustomization } from './FacebookPostCustomization';
+import { ProfileContextForm } from './ProfileContextForm';
 
 interface BiographyCustomizationProps {
   onCustomize: (preferences: BiographyPreferences) => void;
@@ -14,6 +15,8 @@ interface BiographyCustomizationProps {
   platform?: string;
   language?: string;
   initialPreferences?: Partial<BiographyPreferences>;
+  profileContext?: ProfileContext;
+  onProfileContextChange?: (next: ProfileContext) => void;
 }
 
 const getCustomizationTranslations = (language: string) => {
@@ -326,7 +329,9 @@ export default function BiographyCustomization({
   selectedType,
   platform,
   language,
-  initialPreferences
+  initialPreferences,
+  profileContext,
+  onProfileContextChange
 }: BiographyCustomizationProps) {
   const baseDefaults = useMemo<BiographyPreferences>(() => ({
     tone: '',
@@ -1394,6 +1399,14 @@ Custom user instructions: ${preferences.notes || 'None provided'}`;
         <span className="font-medium text-blue-700">
           {translations.selectedMode}: {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
         </span>
+      </div>
+
+      <div className="mb-6">
+        <ProfileContextForm
+          value={profileContext || {}}
+          onChange={onProfileContextChange || (() => {})}
+          language={language || 'en'}
+        />
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
